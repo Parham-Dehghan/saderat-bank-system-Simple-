@@ -1,0 +1,797 @@
+// ═══════════════════════════════════════════════
+// BANK SADERAT - FRONTEND APP
+// ASP.NET 8 Backend + SQLite
+// ═══════════════════════════════════════════════
+
+const API = '';
+let currentUser = null;
+let currentRole = 'admin';
+let allAccounts = [], allTransactions = [], allLoans = [], allCards = [], allUsers = [];
+
+const ROLES = {
+  admin:    { label: 'ادمین سیستم',   avClass: 'uav-admin',   char: 'م', color: '#2D2B8F' },
+  manager:  { label: 'مدیر شعبه',     avClass: 'uav-manager', char: 'ر', color: '#1B6B3A' },
+  operator: { label: 'اپراتور',        avClass: 'uav-op',      char: 'ا', color: '#D35400' },
+  user:     { label: 'کاربر بانکی',   avClass: 'uav-user',    char: 'ک', color: '#1565C0' },
+  auditor:  { label: 'حسابرس',         avClass: 'uav-audit',   char: 'ح', color: '#6A1B9A' }
+};
+
+const PERMS = {
+  admin:    ['dashboard','my-accounts','transfer','transactions','loans','cards','payments','accounts','customers','reports','audit','admin-panel','user-mgmt','settings'],
+  manager:  ['dashboard','my-accounts','transfer','transactions','loans','cards','payments','accounts','customers','reports','user-mgmt','settings'],
+  operator: ['dashboard','my-accounts','transfer','transactions','loans','cards','payments','accounts','customers','settings'],
+  user:     ['dashboard','my-accounts','transfer','transactions','loans','cards','payments','settings'],
+  auditor:  ['dashboard','transactions','reports','audit','settings']
+};
+
+const PERM_LABELS = {
+  dashboard:'داشبورد','my-accounts':'حساب‌های من',transfer:'انتقال وجه',
+  transactions:'تراکنش‌ها',loans:'وام‌ها',cards:'کارت‌ها',payments:'پرداخت قبوض',
+  accounts:'مدیریت حساب‌ها',customers:'مشتریان',reports:'گزارشات',
+  audit:'حسابرسی','admin-panel':'پنل ادمین','user-mgmt':'مدیریت کاربران',settings:'تنظیمات'
+};
+
+// ─── ROLE DESCRIPTIONS (for User Management overview) ──
+const ROLE_INFO = {
+  admin:    { icon:'👑', desc:'دسترسی کامل به تمام بخش‌ها، پنل ادمین، کنسول SQL و مدیریت کاربران', count: 1 },
+  manager:  { icon:'🏛️', desc:'تأیید وام، گزارشات مالی، مدیریت کاربران (بدون پنل ادمین)', count: 1 },
+  operator: { icon:'🧑‍💼', desc:'ثبت تراکنش، افتتاح حساب، صدور کارت، مدیریت مشتریان', count: 1 },
+  user:     { icon:'👤', desc:'مشاهده حساب خود، انتقال وجه، درخواست وام، پرداخت قبوض', count: 2 },
+  auditor:  { icon:'🔍', desc:'دسترسی فقط‌خواندنی به تراکنش‌ها، گزارشات و لاگ حسابرسی', count: 1 }
+};
+
+// ─── CRUD-LEVEL ACTION MATRIX ───────────────────────────
+// R=Read, C=Create, U=Update, D=Delete, A=Approve
+const CRUD_MATRIX = {
+  'حساب‌ها (Accounts)':       { admin:'RCUD',  manager:'RCU',   operator:'RCU',  user:'R',  auditor:'R' },
+  'تراکنش‌ها (Transactions)':  { admin:'RCUD',  manager:'RC',    operator:'RC',   user:'RC', auditor:'R' },
+  'انتقال وجه (Transfer)':     { admin:'C',     manager:'C',     operator:'C',    user:'C',  auditor:'-' },
+  'وام‌ها (Loans)':            { admin:'RCUDA', manager:'RCUA',  operator:'RC',   user:'RC', auditor:'R' },
+  'کارت‌ها (Cards)':           { admin:'RCUD',  manager:'RCU',   operator:'RCU',  user:'R',  auditor:'-' },
+  'کاربران (Users)':           { admin:'RCUD',  manager:'RC',    operator:'-',    user:'-',  auditor:'-' },
+  'گزارشات (Reports)':         { admin:'R',     manager:'R',     operator:'-',    user:'-',  auditor:'R' },
+  'حسابرسی (Audit Log)':       { admin:'R',     manager:'-',     operator:'-',    user:'-',  auditor:'R' },
+  'پنل ادمین (Admin Panel)':   { admin:'RCUD',  manager:'-',     operator:'-',    user:'-',  auditor:'-' },
+};
+const CRUD_LABELS = { R:'مشاهده', C:'ایجاد', U:'ویرایش', D:'حذف', A:'تأیید' };
+const CRUD_COLORS = { R:'#1565C0', C:'#1B6B3A', U:'#D35400', D:'#C0392B', A:'#6A1B9A' };
+
+
+const PAGE_TITLES = {
+  dashboard:'داشبورد اصلی','my-accounts':'حساب‌های من',transfer:'انتقال وجه',
+  transactions:'تراکنش‌ها',loans:'وام‌ها',cards:'کارت‌ها',payments:'پرداخت قبوض',
+  accounts:'مدیریت حساب‌ها',customers:'مشتریان',reports:'گزارشات',
+  audit:'حسابرسی','admin-panel':'پنل ادمین','user-mgmt':'مدیریت کاربران',settings:'تنظیمات'
+};
+
+// ─── HELPERS ────────────────────────────────────
+function fmt(n)  { return Number(n || 0).toLocaleString('fa-IR'); }
+function toFa(n) { return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]); }
+function fmtCard(n) { return n ? n.replace(/(\d{4})(\d{4})(\d{4})(\d{4})/, '$1-$2-****-$4') : '****-****-****-****'; }
+
+async function apiCall(url, method = 'GET', body = null) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' }, credentials: 'include' };
+  if (body) opts.body = JSON.stringify(body);
+  try {
+    const r = await fetch(API + url, opts);
+    if (r.status === 401) { window.location.href = '/login.html'; return null; }
+    return await r.json();
+  } catch (e) {
+    // Demo mode fallback
+    return null;
+  }
+}
+
+// ─── TOAST ──────────────────────────────────────
+let toastT;
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  const icons = { ok: '✅', err: '❌', warn: '⚠️', '': 'ℹ️' };
+  t.textContent = (icons[type] || 'ℹ️') + ' ' + msg;
+  t.className = 'show' + (type ? ' ' + type : '');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => t.className = '', 3500);
+}
+
+// ─── MODAL ──────────────────────────────────────
+function openMo(id) {
+  document.getElementById(id).classList.add('open');
+  populateAccountSelects();
+}
+function closeMo(id) { document.getElementById(id).classList.remove('open'); }
+document.addEventListener('click', e => { if (e.target.classList.contains('mo')) e.target.classList.remove('open'); });
+
+// ─── AUTH ────────────────────────────────────────
+async function checkAuth() {
+  const data = await apiCall('/api/auth/me');
+  if (data) {
+    currentUser = data;
+    currentRole = data.role;
+    initUI();
+  } else {
+    // Demo mode — initialize without backend
+    currentUser = { id: 1, name: 'مدیر ارشد', role: 'admin', email: 'admin@saderat.ir', username: 'admin' };
+    currentRole = 'admin';
+    initUI();
+  }
+}
+
+async function logout() {
+  await apiCall('/api/auth/logout', 'POST');
+  window.location.href = '/login.html';
+}
+
+// ─── INIT UI ────────────────────────────────────
+function initUI() {
+  buildRoleTabs();
+  setRole(currentRole);
+}
+
+function buildRoleTabs() {
+  const tabs = document.getElementById('role-tabs');
+  const roleMap = { admin: 'ادمین', manager: 'مدیر', operator: 'اپراتور', user: 'کاربر', auditor: 'حسابرس' };
+  tabs.innerHTML = Object.entries(roleMap).map(([r, l]) =>
+    `<div class="role-tab ${r === currentRole ? 'active' : ''}" onclick="setRole('${r}')" id="rtab-${r}">${l}</div>`
+  ).join('');
+}
+
+function setRole(role) {
+  currentRole = role;
+  const r = ROLES[role];
+  // Update tabs
+  document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+  const tab = document.getElementById('rtab-' + role);
+  if (tab) tab.classList.add('active');
+  // Topbar
+  const av = document.getElementById('tb-av');
+  const nameEl = document.getElementById('tb-name');
+  if (av) { av.textContent = r.char; av.className = 'uav ' + r.avClass; }
+  const names = { admin:'مدیر ارشد', manager:'رضا حسینی', operator:'سارا موسوی', user:'علی کریمی', auditor:'نیلوفر احمدی' };
+  if (nameEl) nameEl.textContent = names[role] || r.label;
+  const roleEl = document.getElementById('tb-role');
+  if (roleEl) roleEl.textContent = r.label;
+  // Banner
+  const rb = document.getElementById('rb-role');
+  if (rb) rb.textContent = r.label;
+  // Nav visibility
+  document.querySelectorAll('.nav-item[data-roles]').forEach(n => {
+    const roles = n.getAttribute('data-roles').split(',');
+    n.classList.toggle('hidden', !roles.includes(role));
+  });
+  // Restrict add buttons
+  const canWrite = ['admin', 'manager', 'operator'].includes(role);
+  const btns = ['btn-add-tx'];
+  btns.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = canWrite ? '' : 'none'; });
+  // Settings perms
+  renderSettingsPerms();
+  showToast(`نقش "${r.label}" فعال شد`, 'ok');
+  showPage('dashboard');
+}
+
+// ─── NAVIGATION ─────────────────────────────────
+function showPage(name) {
+  if (!PERMS[currentRole].includes(name)) {
+    showToast('دسترسی ندارید — نقش شما این بخش را نمی‌بیند', 'err');
+    return;
+  }
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item:not(.hidden)').forEach(n => n.classList.remove('active'));
+  const pg = document.getElementById('page-' + name);
+  if (!pg) { showToast('صفحه یافت نشد', 'err'); return; }
+  pg.classList.add('active');
+  document.getElementById('page-title').textContent = PAGE_TITLES[name] || name;
+  document.querySelectorAll(`.nav-item[onclick*="'${name}'"]`).forEach(n => n.classList.add('active'));
+  loadPage(name);
+}
+
+function loadPage(name) {
+  if (name === 'dashboard')   loadDashboard();
+  else if (name === 'my-accounts') loadMyAccounts();
+  else if (name === 'transfer')    loadTransfer();
+  else if (name === 'transactions') { loadTransactions(); populateAccountSelects(); }
+  else if (name === 'loans')   loadLoans();
+  else if (name === 'cards')   loadCards();
+  else if (name === 'payments') populatePayAcc();
+  else if (name === 'accounts') loadAccounts();
+  else if (name === 'customers') loadCustomers();
+  else if (name === 'reports') loadReports();
+  else if (name === 'audit')   loadAudit();
+  else if (name === 'admin-panel') loadAdminPanel();
+  else if (name === 'user-mgmt')   loadUserMgmt();
+  else if (name === 'settings')    renderSettingsPerms();
+}
+
+// ─── DASHBOARD ──────────────────────────────────
+async function loadDashboard() {
+  const data = await apiCall('/api/dashboard');
+  if (data) {
+    document.getElementById('ds-bal').textContent = fmt(data.totalBalance);
+    document.getElementById('ds-acc').textContent = toFa(data.activeAccounts || 0);
+    document.getElementById('ds-tx').textContent  = toFa(data.totalTransactions || 0);
+    document.getElementById('ds-loans').textContent = toFa(data.activeLoans || 0);
+    document.getElementById('tx-badge').textContent = toFa(data.totalTransactions || 0);
+    renderDashTx(data.recentTransactions || []);
+  } else {
+    renderDashDemo();
+  }
+  renderMiniChart();
+  renderQuickActions();
+  renderActivityFeed();
+}
+
+function renderDashTx(txs) {
+  document.getElementById('dash-tx').innerHTML = txs.slice(0, 6).map(t => `
+    <tr>
+      <td style="font-size:11px">${t.transactionCode || t.TransactionCode}</td>
+      <td><span class="badge ${t.type==='واریز'||t.Type==='واریز'?'bg-ok':t.type==='برداشت'||t.Type==='برداشت'?'bg-no':'bg-b'}">${t.type||t.Type}</span></td>
+      <td class="${(t.type||t.Type)==='واریز'?'credit':'debit'}">${fmt(t.amount||t.Amount)}</td>
+      <td><span class="badge ${(t.status||t.Status)==='موفق'?'bg-ok':(t.status||t.Status)==='در انتظار'?'bg-w':'bg-no'}">${t.status||t.Status}</span></td>
+      <td style="font-size:11px">${t.date||t.Date||''}</td>
+    </tr>
+  `).join('');
+}
+
+function renderDashDemo() {
+  document.getElementById('ds-bal').textContent = fmt(2398000000);
+  document.getElementById('ds-acc').textContent = toFa(4);
+  document.getElementById('ds-tx').textContent  = toFa(8);
+  document.getElementById('ds-loans').textContent = toFa(3);
+  document.getElementById('acc-badge').textContent = toFa(5);
+  document.getElementById('tx-badge').textContent  = toFa(8);
+}
+
+function renderMiniChart() {
+  const vals = [45, 72, 38, 91, 56, 83, 67];
+  const mx = Math.max(...vals);
+  document.getElementById('mch').innerHTML = vals.map(v =>
+    `<div class="mb" style="height:${Math.round(v/mx*50)}px" title="${toFa(v)} تراکنش"></div>`
+  ).join('');
+}
+
+function renderQuickActions() {
+  const acts = {
+    admin:   [{i:'💸',t:'ثبت تراکنش',a:"openMo('mo-tx')"},{i:'📋',t:'حساب جدید',a:"openMo('mo-acc')"},{i:'💵',t:'صدور کارت',a:"openMo('mo-card')"},{i:'📊',t:'گزارش‌ها',a:"showPage('reports')"},{i:'⚙️',t:'پنل ادمین',a:"showPage('admin-panel')"},{i:'👮',t:'کاربران',a:"showPage('user-mgmt')"}],
+    manager: [{i:'💸',t:'تراکنش',a:"openMo('mo-tx')"},{i:'👥',t:'مشتریان',a:"showPage('customers')"},{i:'📊',t:'گزارش‌ها',a:"showPage('reports')"},{i:'👮',t:'کاربران',a:"showPage('user-mgmt')"}],
+    operator:[{i:'↔️',t:'تراکنش جدید',a:"openMo('mo-tx')"},{i:'📋',t:'حساب‌ها',a:"showPage('accounts')"},{i:'👥',t:'مشتریان',a:"showPage('customers')"}],
+    user:    [{i:'💸',t:'انتقال وجه',a:"showPage('transfer')"},{i:'📱',t:'پرداخت قبوض',a:"showPage('payments')"},{i:'💳',t:'کارت‌هایم',a:"showPage('cards')"}],
+    auditor: [{i:'🔍',t:'حسابرسی',a:"showPage('audit')"},{i:'📊',t:'گزارش‌ها',a:"showPage('reports')"}]
+  };
+  const el = document.getElementById('qa-grid');
+  if (!el) return;
+  el.innerHTML = (acts[currentRole] || []).map(a =>
+    `<div class="qa-btn" onclick="${a.a}"><div class="qa-icon">${a.i}</div><div class="qa-txt">${a.t}</div></div>`
+  ).join('');
+}
+
+function renderActivityFeed() {
+  const items = [
+    {cls:'act-blue',icon:'💸',txt:'انتقال ۱۵ میلیون از ACC-001',time:'۱۵ دقیقه پیش'},
+    {cls:'act-green',icon:'✅',txt:'حساب جدید افتتاح شد',time:'۳۰ دقیقه پیش'},
+    {cls:'act-gold',icon:'⚠️',txt:'تلاش برداشت بیش از سقف — رد شد',time:'۱ ساعت پیش'},
+    {cls:'act-red',icon:'🔐',txt:'ورود ناموفق — IP: 185.x.x.x',time:'۲ ساعت پیش'},
+    {cls:'act-blue',icon:'🏦',txt:'وام LN-003 تأیید شد',time:'۳ ساعت پیش'},
+  ];
+  const el = document.getElementById('activity-feed');
+  if (!el) return;
+  el.innerHTML = items.map(a =>
+    `<div class="act-item"><div class="act-dot ${a.cls}">${a.icon}</div><div style="flex:1"><div style="font-size:13px">${a.txt}</div><div style="font-size:11px;color:var(--bs-muted)">${a.time}</div></div></div>`
+  ).join('');
+}
+
+// ─── MY ACCOUNTS ────────────────────────────────
+async function loadMyAccounts() {
+  const accs = await apiCall('/api/accounts') || getDemoAccounts();
+  const myAccs = currentRole === 'user' ? accs.slice(0, 2) : accs;
+  const tb = myAccs.reduce((s, a) => s + (a.balance || a.Balance || 0), 0);
+  document.getElementById('my-acc-cnt').textContent = toFa(myAccs.length);
+  document.getElementById('my-bal').textContent = fmt(tb);
+  const pname = {admin:'مدیر ارشد',manager:'رضا حسینی',operator:'سارا موسوی',user:'علی کریمی',auditor:'نیلوفر احمدی'};
+  document.getElementById('prof-name').textContent = pname[currentRole] || 'کاربر';
+  document.getElementById('prof-role2').textContent = ROLES[currentRole].label;
+  // Bank cards visual
+  document.getElementById('my-cards').innerHTML = myAccs.slice(0,3).map((a, i) =>
+    `<div class="bk-card"><div class="bc-top"><div class="bc-name">بانک صادرات ایران</div>
+    <img src="/images/saderat-logo.png" alt="" style="width:20px;height:20px;object-fit:contain;filter:brightness(0) invert(1);opacity:0.85"></div>
+    <div class="bc-chip"></div>
+    <div class="bc-num">6037-6978-****-${toFa(String(1000 + i * 1111).slice(-4))}</div>
+    <div class="bc-bot"><div><div class="bc-lbl">صاحب حساب</div><div class="bc-val">${a.ownerName || a.OwnerName || ''}</div></div><div><div class="bc-lbl">موجودی</div><div class="bc-bal">${fmt(a.balance || a.Balance)} ت</div></div></div></div>`
+  ).join('');
+  document.getElementById('my-accs').innerHTML = myAccs.map(a =>
+    `<tr><td style="font-size:12px">${a.accountNumber||a.AccountNumber}</td><td><span class="badge bg-g">${a.accountType||a.AccountType}</span></td><td class="credit">${fmt(a.balance||a.Balance)}</td><td><span class="badge ${(a.status||a.Status)==='فعال'?'bg-ok':'bg-no'}">${a.status||a.Status}</span></td><td style="font-size:11px">${a.date||a.Date||''}</td></tr>`
+  ).join('');
+  const txs = await apiCall('/api/transactions') || getDemoTx();
+  document.getElementById('my-txs').innerHTML = txs.slice(0, 8).map(t =>
+    `<tr><td><span class="badge ${(t.type||t.Type)==='واریز'?'bg-ok':'bg-no'}">${t.type||t.Type}</span></td><td class="${(t.type||t.Type)==='واریز'?'credit':'debit'}">${fmt(t.amount||t.Amount)}</td><td>${t.description||t.Description||''}</td><td><span class="badge ${(t.status||t.Status)==='موفق'?'bg-ok':'bg-w'}">${t.status||t.Status}</span></td><td style="font-size:11px">${t.date||t.Date||''}</td></tr>`
+  ).join('');
+}
+
+// ─── TRANSFER ───────────────────────────────────
+async function loadTransfer() {
+  const accs = await apiCall('/api/accounts') || getDemoAccounts();
+  allAccounts = accs;
+  const sel = document.getElementById('tr-from');
+  if (sel) {
+    sel.innerHTML = accs.map(a => `<option value="${a.id||a.Id}">${a.accountNumber||a.AccountNumber} — ${a.ownerName||a.OwnerName} (${fmt(a.balance||a.Balance)})</option>`).join('');
+    updateTrBal();
+  }
+}
+
+async function updateTrBal() {
+  const sel = document.getElementById('tr-from');
+  if (!sel) return;
+  const id = parseInt(sel.value);
+  const acc = allAccounts.find(a => (a.id||a.Id) === id);
+  const el = document.getElementById('tr-bal');
+  if (el && acc) el.textContent = `💰 موجودی: ${fmt(acc.balance||acc.Balance)} تومان`;
+}
+
+async function doTransfer() {
+  const fromId  = parseInt(document.getElementById('tr-from')?.value);
+  const toNum   = document.getElementById('tr-to')?.value?.trim();
+  const amount  = parseFloat(document.getElementById('tr-amt')?.value || 0);
+  const desc    = document.getElementById('tr-desc')?.value || 'انتقال وجه';
+  if (!toNum)   { showToast('شماره حساب مقصد را وارد کنید', 'err'); return; }
+  if (!amount || amount <= 0) { showToast('مبلغ را وارد کنید', 'err'); return; }
+  const res = await apiCall('/api/transfer', 'POST', { fromAccountId: fromId, toAccountNumber: toNum, amount, description: desc });
+  if (res?.success) {
+    showToast(`انتقال ${fmt(amount)} تومان موفق — کد: ${res.code}`, 'ok');
+    document.getElementById('tr-amt').value = '';
+    loadTransfer();
+  } else {
+    showToast(res?.message || 'خطا در انتقال', 'err');
+    // Demo fallback
+    if (!res) showToast(`انتقال ${fmt(amount)} تومان موفق (نمایش آزمایشی)`, 'ok');
+  }
+}
+
+// ─── TRANSACTIONS ────────────────────────────────
+async function loadTransactions() {
+  const data = await apiCall('/api/transactions') || getDemoTx();
+  allTransactions = data;
+  renderTxTable(data);
+}
+
+function renderTxTable(txs) {
+  const q = document.getElementById('tx-search')?.value.toLowerCase() || '';
+  const f = document.getElementById('tx-filter')?.value || '';
+  const rows = txs.filter(t =>
+    (!q || (t.transactionCode||t.TransactionCode||'').toLowerCase().includes(q) || (t.description||t.Description||'').includes(q)) &&
+    (!f || (t.type||t.Type) === f)
+  );
+  document.getElementById('tx-tbody').innerHTML = rows.map(t =>
+    `<tr>
+      <td style="font-size:11px">${t.transactionCode||t.TransactionCode}</td>
+      <td style="font-size:12px">${t.accountNumber||t.AccountNumber||''}</td>
+      <td><span class="badge ${(t.type||t.Type)==='واریز'?'bg-ok':(t.type||t.Type)==='برداشت'?'bg-no':'bg-b'}">${t.type||t.Type}</span></td>
+      <td class="${(t.type||t.Type)==='واریز'?'credit':'debit'}">${fmt(t.amount||t.Amount)}</td>
+      <td style="font-size:12px">${t.description||t.Description||''}</td>
+      <td><span class="badge ${(t.status||t.Status)==='موفق'?'bg-ok':(t.status||t.Status)==='در انتظار'?'bg-w':'bg-no'}">${t.status||t.Status}</span></td>
+      <td style="font-size:11px">${t.date||t.Date||''}</td>
+    </tr>`
+  ).join('');
+}
+
+function filterTx() { renderTxTable(allTransactions); }
+
+async function addTx() {
+  const accId = parseInt(document.getElementById('ntx-acc')?.value);
+  const type  = document.getElementById('ntx-type')?.value;
+  const amount= parseFloat(document.getElementById('ntx-amt')?.value || 0);
+  const desc  = document.getElementById('ntx-desc')?.value || 'تراکنش';
+  if (!amount || amount <= 0) { showToast('مبلغ را وارد کنید', 'err'); return; }
+  const res = await apiCall('/api/transactions', 'POST', { accountId: accId, type, amount, description: desc });
+  if (res?.success || !res) {
+    showToast(`تراکنش ${res?.code||'TX'} ثبت شد`, 'ok');
+    closeMo('mo-tx');
+    loadTransactions();
+    document.getElementById('ntx-amt').value = '';
+  } else showToast(res.message || 'خطا', 'err');
+}
+
+// ─── LOANS ──────────────────────────────────────
+async function loadLoans() {
+  const data = await apiCall('/api/loans') || getDemoLoans();
+  allLoans = data;
+  document.getElementById('loan-tbody').innerHTML = data.map(l =>
+    `<tr>
+      <td>${l.loanCode||l.LoanCode}</td>
+      <td>${l.userName||l.UserName||''}</td>
+      <td><span class="badge bg-i">${l.loanType||l.LoanType}</span></td>
+      <td><strong>${fmt(l.amount||l.Amount)}</strong></td>
+      <td>${(l.interestRate||l.InterestRate)===0?'—':(l.interestRate||l.InterestRate)+'٪'}</td>
+      <td>${toFa(l.installments||l.Installments)} ماه</td>
+      <td><span class="badge ${(l.status||l.Status)==='جاری'?'bg-w':(l.status||l.Status)==='در بررسی'?'bg-g':'bg-ok'}">${l.status||l.Status}</span></td>
+      <td>
+        <button class="btn btn-xs" style="background:#E8F5E9;color:#1B5E20;border:none" onclick="loanStatus(${l.id||l.Id},'جاری')">✓ تأیید</button>
+        <button class="btn btn-xs" style="background:#EDE7F6;color:#4A1AAF;border:none" onclick="loanStatus(${l.id||l.Id},'تسویه')">✅ تسویه</button>
+      </td>
+    </tr>`
+  ).join('');
+}
+
+async function addLoan() {
+  const type  = document.getElementById('nl-type')?.value;
+  const amount= parseFloat(document.getElementById('nl-amt')?.value||0);
+  const inst  = parseInt(document.getElementById('nl-inst')?.value||12);
+  const rate  = parseFloat(document.getElementById('nl-rate')?.value||18);
+  if (!amount) { showToast('مبلغ را وارد کنید','err'); return; }
+  const res = await apiCall('/api/loans','POST',{loanType:type,amount,interestRate:rate,installments:inst});
+  if (res?.success || !res) { showToast('وام ثبت شد','ok'); closeMo('mo-loan'); loadLoans(); }
+  else showToast(res.message||'خطا','err');
+}
+
+async function loanStatus(id, status) {
+  const res = await apiCall(`/api/loans/${id}/status`,'PUT',{status});
+  if (res?.success || !res) { showToast('وضعیت وام تغییر کرد','ok'); loadLoans(); }
+}
+
+// ─── CARDS ──────────────────────────────────────
+async function loadCards() {
+  const data = await apiCall('/api/cards') || getDemoCards();
+  allCards = data;
+  document.getElementById('cards-display').innerHTML = data.slice(0,3).map(c =>
+    `<div class="bk-card" style="${(c.status||c.Status)==='مسدود'?'opacity:0.55':''}">
+      <div class="bc-top"><div class="bc-name">بانک صادرات ایران</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">${c.cardType||c.CardType}</div></div>
+      <div class="bc-chip"></div>
+      <div class="bc-num">${fmtCard(c.cardNumber||c.CardNumber)}</div>
+      <div class="bc-bot"><div><div class="bc-lbl">دارنده</div><div class="bc-val">${c.ownerName||c.OwnerName||''}</div></div><div><div class="bc-lbl">انقضا</div><div style="font-size:13px;color:var(--bs-gold-l)">${c.expiryDate||c.ExpiryDate}</div></div></div>
+    </div>`
+  ).join('');
+  document.getElementById('card-tbody').innerHTML = data.map(c =>
+    `<tr>
+      <td style="font-family:monospace;font-size:12px">${fmtCard(c.cardNumber||c.CardNumber)}</td>
+      <td>${c.ownerName||c.OwnerName||''}</td>
+      <td><span class="badge bg-i">${c.cardType||c.CardType}</span></td>
+      <td>${fmt(c.dailyLimit||c.DailyLimit)}</td>
+      <td>${c.expiryDate||c.ExpiryDate}</td>
+      <td><span class="badge ${(c.status||c.Status)==='فعال'?'bg-ok':'bg-no'}">${c.status||c.Status}</span></td>
+      <td><button class="btn btn-outline btn-xs" onclick="toggleCard(${c.id||c.Id})">${(c.status||c.Status)==='فعال'?'🔒 مسدود':'🔓 فعال'}</button></td>
+    </tr>`
+  ).join('');
+}
+
+async function addCard() {
+  const accId = parseInt(document.getElementById('nc-acc')?.value);
+  const type  = document.getElementById('nc-type')?.value;
+  const limit = parseFloat(document.getElementById('nc-limit')?.value||5000000);
+  const res = await apiCall('/api/cards','POST',{accountId:accId,cardType:type,dailyLimit:limit});
+  if (res?.success || !res) { showToast('کارت صادر شد','ok'); closeMo('mo-card'); loadCards(); }
+}
+
+async function toggleCard(id) {
+  const res = await apiCall(`/api/cards/${id}/toggle`,'PUT');
+  if (res?.success || !res) { showToast(`کارت ${res?.status||'تغییر'} شد`,'ok'); loadCards(); }
+}
+
+// ─── ACCOUNTS MGMT ──────────────────────────────
+async function loadAccounts() {
+  const data = await apiCall('/api/accounts') || getDemoAccounts();
+  allAccounts = data;
+  document.getElementById('acc-badge').textContent = toFa(data.length);
+  renderAccTable(data);
+}
+
+function renderAccTable(data) {
+  document.getElementById('acc-tbody').innerHTML = data.map(a =>
+    `<tr>
+      <td style="font-size:12px;font-family:monospace">${a.accountNumber||a.AccountNumber}</td>
+      <td>${a.ownerName||a.OwnerName||''}</td>
+      <td><span class="badge bg-g">${a.accountType||a.AccountType}</span></td>
+      <td class="credit">${fmt(a.balance||a.Balance)}</td>
+      <td><span class="badge ${(a.status||a.Status)==='فعال'?'bg-ok':(a.status||a.Status)==='مسدود'?'bg-no':'bg-w'}">${a.status||a.Status}</span></td>
+      <td style="font-size:11px">${a.date||a.Date||''}</td>
+      <td>
+        <button class="btn btn-outline btn-xs" onclick="showToast('حساب: ${a.accountNumber||a.AccountNumber}')">👁️</button>
+        <button class="btn btn-xs btn-danger" onclick="delAcc(${a.id||a.Id})">🗑️</button>
+      </td>
+    </tr>`
+  ).join('');
+}
+
+function filterAccs() {
+  const q = document.getElementById('acc-search')?.value.toLowerCase() || '';
+  renderAccTable(allAccounts.filter(a =>
+    (a.ownerName||a.OwnerName||'').toLowerCase().includes(q) ||
+    (a.accountNumber||a.AccountNumber||'').includes(q)
+  ));
+}
+
+async function addAcc() {
+  const type  = document.getElementById('na-type')?.value;
+  const bal   = parseFloat(document.getElementById('na-bal')?.value||0);
+  const uid   = parseInt(document.getElementById('na-uid')?.value||1);
+  const status= document.getElementById('na-status')?.value;
+  const res = await apiCall('/api/accounts','POST',{accountType:type,initialBalance:bal,userId:uid,status});
+  if (res?.success || !res) { showToast('حساب افتتاح شد','ok'); closeMo('mo-acc'); loadAccounts(); }
+}
+
+async function delAcc(id) {
+  if (!confirm('حذف این حساب؟')) return;
+  const res = await apiCall(`/api/accounts/${id}`,'DELETE');
+  if (res?.success || !res) { showToast('حذف شد'); loadAccounts(); }
+}
+
+// ─── CUSTOMERS ──────────────────────────────────
+async function loadCustomers() {
+  const data = await apiCall('/api/users') || getDemoUsers();
+  allUsers = data;
+  renderCustTable(data);
+}
+
+function renderCustTable(data) {
+  const roleColors = { admin:'bg-no', manager:'bg-w', operator:'bg-b', user:'bg-g', auditor:'bg-i' };
+  const roleLabels = { admin:'ادمین', manager:'مدیر', operator:'اپراتور', user:'کاربر', auditor:'حسابرس' };
+  document.getElementById('cust-tbody').innerHTML = data.map(u =>
+    `<tr>
+      <td style="font-size:12px">${u.id||u.Id}</td>
+      <td><strong>${u.fullName||u.FullName}</strong><div style="font-size:11px;color:var(--bs-muted)">${u.username||u.Username}</div></td>
+      <td><span class="badge ${roleColors[u.role||u.Role]||'bg-g'}">${roleLabels[u.role||u.Role]||u.role||u.Role}</span></td>
+      <td style="font-size:12px">${u.email||u.Email}</td>
+      <td style="font-size:11px">${u.lastLogin||u.LastLogin||'هرگز'}</td>
+      <td><span class="badge ${(u.isActive||u.IsActive)?'bg-ok':'bg-no'}">${(u.isActive||u.IsActive)?'فعال':'غیرفعال'}</span></td>
+    </tr>`
+  ).join('');
+}
+
+function filterCusts() {
+  const q = document.getElementById('cust-search')?.value.toLowerCase()||'';
+  renderCustTable(allUsers.filter(u => (u.fullName||u.FullName||'').toLowerCase().includes(q)||(u.username||u.Username||'').includes(q)));
+}
+
+// ─── REPORTS ────────────────────────────────────
+async function loadReports() {
+  const txs = await apiCall('/api/transactions') || getDemoTx();
+  const accs = await apiCall('/api/accounts') || getDemoAccounts();
+  const dep = txs.filter(t=>(t.type||t.Type)==='واریز').reduce((s,t)=>s+(t.amount||t.Amount||0),0);
+  const wd  = txs.filter(t=>(t.type||t.Type)==='برداشت').reduce((s,t)=>s+(t.amount||t.Amount||0),0);
+  document.getElementById('rep-in').textContent  = fmt(dep);
+  document.getElementById('rep-out').textContent = fmt(wd);
+  document.getElementById('rep-cnt').textContent = toFa(txs.length);
+  const avg = txs.length ? Math.round((dep+wd)/txs.length) : 0;
+  document.getElementById('rep-avg').textContent = fmt(avg);
+  const sorted = [...accs].sort((a,b)=>(b.balance||b.Balance||0)-(a.balance||a.Balance||0));
+  document.getElementById('top-accs').innerHTML = sorted.slice(0,5).map((a,i)=>
+    `<tr><td><span class="badge bg-b">${toFa(i+1)}</span></td><td>${a.ownerName||a.OwnerName||''}</td><td style="font-size:12px;font-family:monospace">${a.accountNumber||a.AccountNumber}</td><td><span class="badge bg-g">${a.accountType||a.AccountType}</span></td><td class="credit">${fmt(a.balance||a.Balance)}</td></tr>`
+  ).join('');
+}
+
+// ─── AUDIT ──────────────────────────────────────
+async function loadAudit() {
+  const data = await apiCall('/api/audit') || getDemoAudit();
+  const roleLabels = { admin:'ادمین', manager:'مدیر', operator:'اپراتور', user:'کاربر', auditor:'حسابرس' };
+  document.getElementById('audit-tbody').innerHTML = data.map(l =>
+    `<tr>
+      <td style="font-size:11px">${l.date||l.Date||''}</td>
+      <td><span class="badge bg-g">${l.userName||l.UserName||''}</span></td>
+      <td><span class="badge bg-b">${roleLabels[l.userRole||l.UserRole]||l.userRole||''}</span></td>
+      <td>${l.action||l.Action}</td>
+      <td style="font-size:12px;color:var(--bs-muted)">${l.detail||l.Detail}</td>
+      <td style="font-size:11px;direction:ltr">${l.ipAddress||l.IpAddress||''}</td>
+    </tr>`
+  ).join('');
+}
+
+// ─── ADMIN PANEL ────────────────────────────────
+async function loadAdminPanel() {
+  const accs = await apiCall('/api/accounts') || getDemoAccounts();
+  const txs  = await apiCall('/api/transactions') || getDemoTx();
+  const loans = await apiCall('/api/loans') || getDemoLoans();
+  const total = accs.length + txs.length + 4 + 4 + 3;
+  document.getElementById('db-recs').textContent = toFa(total) + ' رکورد';
+  renderPendingApprovals(loans, txs);
+}
+
+function renderPendingApprovals(loans, txs) {
+  const pendingLoans = loans.filter(l => (l.status||l.Status) === 'در بررسی');
+  const pendingTx    = txs.filter(t => (t.status||t.Status) === 'در انتظار');
+  const totalPending = pendingLoans.length + pendingTx.length;
+  document.getElementById('pending-count-badge').textContent = toFa(totalPending) + ' مورد';
+  const rows = [];
+  pendingLoans.forEach(l => rows.push(`
+    <tr>
+      <td><span class="badge bg-i">درخواست وام</span></td>
+      <td>${l.loanCode||l.LoanCode}</td>
+      <td>${l.userName||l.UserName||''}</td>
+      <td><strong>${fmt(l.amount||l.Amount)}</strong></td>
+      <td style="font-size:12px">${l.loanType||l.LoanType} — ${toFa(l.installments||l.Installments)} ماه</td>
+      <td>
+        <button class="btn btn-xs" style="background:#E8F5E9;color:#1B5E20;border:none" onclick="loanStatus(${l.id||l.Id},'جاری');loadAdminPanel()">✓ تأیید</button>
+        <button class="btn btn-xs btn-danger" onclick="loanStatus(${l.id||l.Id},'رد شده');loadAdminPanel()">✕ رد</button>
+      </td>
+    </tr>`));
+  pendingTx.forEach(t => rows.push(`
+    <tr>
+      <td><span class="badge bg-w">تراکنش معلق</span></td>
+      <td style="font-size:11px">${t.transactionCode||t.TransactionCode}</td>
+      <td style="font-size:12px">${t.accountNumber||t.AccountNumber||''}</td>
+      <td><strong>${fmt(t.amount||t.Amount)}</strong></td>
+      <td style="font-size:12px">${t.description||t.Description||''}</td>
+      <td><button class="btn btn-xs" style="background:#E8F5E9;color:#1B5E20;border:none" onclick="showToast('تراکنش تأیید شد','ok')">✓ تأیید</button></td>
+    </tr>`));
+  document.getElementById('pending-tbody').innerHTML = rows.length ? rows.join('') :
+    `<tr><td colspan="6" style="text-align:center;color:var(--bs-muted);padding:18px">✅ هیچ موردی در انتظار تأیید نیست</td></tr>`;
+}
+
+async function runSQL() {
+  const q = document.getElementById('sql-in').value.trim().toLowerCase();
+  const out = document.getElementById('sql-out');
+  const accs = await apiCall('/api/accounts') || getDemoAccounts();
+  const txs  = await apiCall('/api/transactions') || getDemoTx();
+  let res = '';
+  if (q.includes('from accounts')) {
+    res = `-- ${accs.length} رکورد\nId | AccountNumber      | Type       | Balance       | Status\n` + '-'.repeat(65) + '\n';
+    accs.forEach(a => res += `${(a.id||a.Id)}  | ${(a.accountNumber||a.AccountNumber||'').padEnd(18)} | ${(a.accountType||a.AccountType||'').padEnd(10)} | ${String(a.balance||a.Balance||0).padEnd(13)} | ${a.status||a.Status}\n`);
+  } else if (q.includes('from transactions')) {
+    res = `-- ${txs.length} رکورد\n`;
+    txs.slice(0,5).forEach(t => res += `${t.transactionCode||t.TransactionCode} | ${t.type||t.Type} | ${t.amount||t.Amount} | ${t.status||t.Status}\n`);
+  } else if (q.includes('count') || q.includes('sum')) {
+    const s = accs.reduce((x,a)=>x+(a.balance||a.Balance||0),0);
+    res = `Total_Accounts | Sum_Balance\n${accs.length}              | ${s.toLocaleString()}`;
+  } else {
+    res = `OK — اجرا شد`;
+  }
+  out.style.color = '#88C4FF';
+  out.textContent = res;
+}
+
+// ─── USER MGMT ──────────────────────────────────
+async function loadUserMgmt() {
+  const data = await apiCall('/api/users') || getDemoUsers();
+  allUsers = data;
+  const roleColors = { admin:'bg-no', manager:'bg-w', operator:'bg-b', user:'bg-g', auditor:'bg-i' };
+  const roleLabels = { admin:'ادمین', manager:'مدیر', operator:'اپراتور', user:'کاربر', auditor:'حسابرس' };
+  document.getElementById('user-tbody').innerHTML = data.map(u =>
+    `<tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="uav ${ROLES[u.role||u.Role]?.avClass||'uav-user'}" style="width:30px;height:30px;font-size:12px">${(u.fullName||u.FullName||'?').charAt(0)}</div>
+          <div><div style="font-weight:600;font-size:13px">${u.fullName||u.FullName}</div><div style="font-size:11px;color:var(--bs-muted)">${u.username||u.Username}</div></div>
+        </div>
+      </td>
+      <td><span class="badge ${roleColors[u.role||u.Role]||'bg-g'}">${roleLabels[u.role||u.Role]||u.role||u.Role}</span></td>
+      <td style="font-size:12px">${u.email||u.Email}</td>
+      <td style="font-size:11px">${u.lastLogin||u.LastLogin||'هرگز'}</td>
+      <td><span class="badge ${(u.isActive||u.IsActive)?'bg-ok':'bg-no'}">${(u.isActive||u.IsActive)?'آنلاین':'آفلاین'}</span></td>
+      <td>
+        <button class="btn btn-outline btn-xs" onclick="showToast('ویرایش: ${u.username||u.Username}')">✏️</button>
+        <button class="btn btn-xs btn-danger" onclick="delUser(${u.id||u.Id})">🗑️</button>
+      </td>
+    </tr>`
+  ).join('');
+  // Permission matrix (page-level)
+  const allP = Object.keys(PERM_LABELS);
+  document.getElementById('perm-tbody').innerHTML = allP.map(p =>
+    `<tr><td style="font-weight:500">${PERM_LABELS[p]}</td>${['admin','manager','operator','user','auditor'].map(r=>`<td style="text-align:center">${PERMS[r].includes(p)?'<span style="color:var(--bs-green);font-size:14px">✅</span>':'<span style="color:#ddd">—</span>'}</td>`).join('')}</tr>`
+  ).join('');
+
+  // Role overview cards
+  const roleNames = { admin:'ادمین سیستم', manager:'مدیر شعبه', operator:'اپراتور', user:'کاربر بانکی', auditor:'حسابرس' };
+  document.getElementById('role-cards').innerHTML = Object.keys(ROLE_INFO).map(r => {
+    const info = ROLE_INFO[r];
+    const userCount = data.filter(u => (u.role||u.Role) === r).length;
+    return `<div style="background:var(--bs-sky);border:1px solid var(--bs-sky2);border-radius:10px;padding:14px;text-align:center">
+      <div style="font-size:26px;margin-bottom:6px">${info.icon}</div>
+      <div style="font-weight:700;font-size:13px;color:var(--bs-navy);margin-bottom:4px">${roleNames[r]}</div>
+      <div style="font-size:11px;color:var(--bs-muted);line-height:1.6;margin-bottom:8px;min-height:50px">${info.desc}</div>
+      <span class="badge bg-b">${toFa(userCount)} کاربر</span>
+    </div>`;
+  }).join('');
+
+  // CRUD-level action matrix
+  document.getElementById('crud-tbody').innerHTML = Object.entries(CRUD_MATRIX).map(([resource, roles]) =>
+    `<tr><td style="font-weight:500">${resource}</td>${['admin','manager','operator','user','auditor'].map(r => {
+      const codes = roles[r];
+      if (codes === '-') return `<td style="text-align:center;color:#ddd">—</td>`;
+      const chips = codes.split('').map(c => `<span class="badge" style="background:${CRUD_COLORS[c]}22;color:${CRUD_COLORS[c]};margin:1px;font-size:10px" title="${CRUD_LABELS[c]}">${c}</span>`).join('');
+      return `<td style="text-align:center">${chips}</td>`;
+    }).join('')}</tr>`
+  ).join('');
+}
+
+async function addUser() {
+  const username = document.getElementById('nu-u')?.value.trim();
+  const fullName = document.getElementById('nu-n')?.value.trim();
+  const email    = document.getElementById('nu-e')?.value.trim();
+  const role     = document.getElementById('nu-r')?.value;
+  const password = document.getElementById('nu-p')?.value;
+  if (!username || !fullName) { showToast('اطلاعات را تکمیل کنید','err'); return; }
+  const res = await apiCall('/api/users','POST',{username,fullName,email,role,password});
+  if (res?.success || !res) { showToast('کاربر ایجاد شد','ok'); closeMo('mo-user'); loadUserMgmt(); }
+  else showToast(res.message||'خطا','err');
+}
+
+async function delUser(id) {
+  if (!confirm('غیرفعال‌سازی کاربر؟')) return;
+  const res = await apiCall(`/api/users/${id}`,'DELETE');
+  if (res?.success || !res) { showToast('کاربر غیرفعال شد'); loadUserMgmt(); }
+}
+
+// ─── SETTINGS ────────────────────────────────────
+function renderSettingsPerms() {
+  const r = ROLES[currentRole];
+  const perms = PERMS[currentRole];
+  const av = document.getElementById('sett-av');
+  if (av) { av.textContent = r.char; av.className = 'uav ' + r.avClass; }
+  const names = {admin:'مدیر ارشد',manager:'رضا حسینی',operator:'سارا موسوی',user:'علی کریمی',auditor:'نیلوفر احمدی'};
+  const el1 = document.getElementById('sett-name'); if (el1) el1.textContent = names[currentRole];
+  const el2 = document.getElementById('sett-role'); if (el2) el2.textContent = r.label;
+  const el = document.getElementById('sett-perms');
+  if (!el) return;
+  el.innerHTML = Object.keys(PERM_LABELS).map(k =>
+    `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:7px;font-size:12px;font-weight:500;border:1px solid;${perms.includes(k)?'background:#E8F5E9;color:#1B5E20;border-color:#A5D6A7':'background:#FAFAFA;color:#999;border-color:#eee'}">
+      <span>${PERM_LABELS[k]}</span><span>${perms.includes(k)?'✅':'—'}</span>
+    </div>`
+  ).join('');
+}
+
+// ─── POPULATE SELECTS ────────────────────────────
+async function populateAccountSelects() {
+  if (allAccounts.length === 0) allAccounts = await apiCall('/api/accounts') || getDemoAccounts();
+  const opts = allAccounts.map(a => `<option value="${a.id||a.Id}">${a.accountNumber||a.AccountNumber} — ${a.ownerName||a.OwnerName||''}</option>`).join('');
+  ['ntx-acc','nc-acc'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = opts; });
+}
+
+async function populatePayAcc() {
+  if (allAccounts.length === 0) allAccounts = await apiCall('/api/accounts') || getDemoAccounts();
+  const opts = allAccounts.map(a => `<option value="${a.id||a.Id}">${a.accountNumber||a.AccountNumber}</option>`).join('');
+  const el = document.getElementById('pay-acc'); if (el) el.innerHTML = opts;
+}
+
+// ─── DEMO DATA FALLBACKS ─────────────────────────
+function getDemoAccounts() {
+  return [
+    {id:1,accountNumber:'0119876543210',accountType:'جاری',balance:125000000,status:'فعال',ownerName:'احمد رضایی',date:'۱۴۰۴/۰۱/۱۵'},
+    {id:2,accountNumber:'0221234567890',accountType:'پس‌انداز',balance:340000000,status:'فعال',ownerName:'فاطمه محمدی',date:'۱۴۰۳/۱۱/۲۰'},
+    {id:3,accountNumber:'0330001122334',accountType:'جاری',balance:1850000000,status:'فعال',ownerName:'مدیر ارشد',date:'۱۴۰۳/۰۸/۱۰'},
+    {id:4,accountNumber:'0445566778899',accountType:'قرض‌الحسنه',balance:5000000,status:'فعال',ownerName:'علی کریمی',date:'۱۴۰۴/۰۲/۰۱'},
+    {id:5,accountNumber:'0559988776655',accountType:'کوتاه‌مدت',balance:78000000,status:'مسدود',ownerName:'فاطمه محمدی',date:'۱۴۰۳/۰۶/۱۵'},
+  ];
+}
+function getDemoTx() {
+  return [
+    {id:1,transactionCode:'TX001',type:'واریز',amount:15000000,description:'حقوق',status:'موفق',accountNumber:'0119876543210',date:'۱۴۰۴/۰۳/۱۰'},
+    {id:2,transactionCode:'TX002',type:'برداشت',amount:8000000,description:'خرید',status:'موفق',accountNumber:'0221234567890',date:'۱۴۰۴/۰۳/۱۰'},
+    {id:3,transactionCode:'TX003',type:'انتقال',amount:50000000,description:'قرارداد',status:'موفق',accountNumber:'0330001122334',date:'۱۴۰۴/۰۳/۰۹'},
+    {id:4,transactionCode:'TX004',type:'برداشت',amount:3000000,description:'ATM',status:'موفق',accountNumber:'0119876543210',date:'۱۴۰۴/۰۳/۰۸'},
+    {id:5,transactionCode:'TX005',type:'واریز',amount:100000000,description:'سرمایه',status:'موفق',accountNumber:'0221234567890',date:'۱۴۰۴/۰۳/۰۶'},
+    {id:6,transactionCode:'TX006',type:'واریز',amount:200000000,description:'فروش',status:'موفق',accountNumber:'0330001122334',date:'۱۴۰۴/۰۳/۰۴'},
+  ];
+}
+function getDemoLoans() {
+  return [
+    {id:1,loanCode:'LN001',loanType:'مسکن',amount:800000000,interestRate:18,installments:60,status:'جاری',userName:'احمد رضایی'},
+    {id:2,loanCode:'LN002',loanType:'خودرو',amount:300000000,interestRate:22,installments:36,status:'جاری',userName:'فاطمه محمدی'},
+    {id:3,loanCode:'LN003',loanType:'ازدواج',amount:100000000,interestRate:4,installments:84,status:'جاری',userName:'علی کریمی'},
+    {id:4,loanCode:'LN004',loanType:'قرض‌الحسنه',amount:50000000,interestRate:0,installments:24,status:'تسویه',userName:'فاطمه محمدی'},
+  ];
+}
+function getDemoCards() {
+  return [
+    {id:1,cardNumber:'6037697812345678',cardType:'نقدی',dailyLimit:10000000,expiryDate:'06/1406',status:'فعال',ownerName:'احمد رضایی'},
+    {id:2,cardNumber:'6037697856789012',cardType:'اعتباری',dailyLimit:50000000,expiryDate:'03/1405',status:'فعال',ownerName:'فاطمه محمدی'},
+    {id:3,cardNumber:'6037697890123456',cardType:'نقدی',dailyLimit:100000000,expiryDate:'12/1405',status:'مسدود',ownerName:'مدیر ارشد'},
+  ];
+}
+function getDemoUsers() {
+  return [
+    {id:1,username:'admin',fullName:'مدیر ارشد',email:'admin@saderat.ir',role:'admin',isActive:true,lastLogin:'همین الان'},
+    {id:2,username:'manager1',fullName:'رضا حسینی',email:'manager@saderat.ir',role:'manager',isActive:true,lastLogin:'۱ ساعت پیش'},
+    {id:3,username:'operator1',fullName:'سارا موسوی',email:'op1@saderat.ir',role:'operator',isActive:true,lastLogin:'۳۰ دقیقه پیش'},
+    {id:4,username:'ali.karimi',fullName:'علی کریمی',email:'ali@gmail.com',role:'user',isActive:true,lastLogin:'دیروز'},
+    {id:5,username:'fateme.m',fullName:'فاطمه محمدی',email:'fateme@gmail.com',role:'user',isActive:true,lastLogin:'هرگز'},
+    {id:6,username:'auditor',fullName:'نیلوفر احمدی',email:'audit@saderat.ir',role:'auditor',isActive:true,lastLogin:'۲ روز پیش'},
+  ];
+}
+function getDemoAudit() {
+  return [
+    {id:1,action:'ورود',detail:'احراز هویت موفق',ipAddress:'192.168.1.1',userName:'مدیر ارشد',userRole:'admin',date:'۱۴۰۴/۰۳/۱۰ ۱۳:۲۲'},
+    {id:2,action:'ثبت تراکنش',detail:'TX001 — واریز ۱۵م',ipAddress:'192.168.1.5',userName:'سارا موسوی',userRole:'operator',date:'۱۴۰۴/۰۳/۱۰ ۱۳:۱۵'},
+    {id:3,action:'افتتاح حساب',detail:'ACC-001 — جاری',ipAddress:'192.168.1.1',userName:'مدیر ارشد',userRole:'admin',date:'۱۴۰۴/۰۳/۱۰ ۱۰:۳۰'},
+    {id:4,action:'تأیید وام',detail:'LN-003 قرض‌الحسنه',ipAddress:'10.0.0.2',userName:'رضا حسینی',userRole:'manager',date:'۱۴۰۴/۰۳/۰۹ ۱۶:۴۵'},
+    {id:5,action:'مشاهده گزارش',detail:'گزارش ماهانه',ipAddress:'10.0.0.8',userName:'نیلوفر احمدی',userRole:'auditor',date:'۱۴۰۴/۰۳/۰۹ ۰۹:۰۰'},
+    {id:6,action:'تلاش ناموفق',detail:'دسترسی به حذف رکورد رد شد',ipAddress:'192.168.1.5',userName:'سارا موسوی',userRole:'operator',date:'۱۴۰۴/۰۳/۰۸ ۱۵:۳۰'},
+  ];
+}
+
+// ─── START ───────────────────────────────────────
+window.addEventListener('DOMContentLoaded', checkAuth);
