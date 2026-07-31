@@ -33,11 +33,11 @@ const PERM_LABELS = {
 
 // ─── ROLE DESCRIPTIONS (for User Management overview) ──
 const ROLE_INFO = {
-  admin:    { icon:'👑', desc:'دسترسی کامل به تمام بخش‌ها، پنل ادمین، کنسول SQL و مدیریت کاربران', count: 1 },
-  manager:  { icon:'🏛️', desc:'تأیید وام، گزارشات مالی، مدیریت کاربران (بدون پنل ادمین)', count: 1 },
-  operator: { icon:'🧑‍💼', desc:'ثبت تراکنش، افتتاح حساب، صدور کارت، مدیریت مشتریان', count: 1 },
-  user:     { icon:'👤', desc:'مشاهده حساب خود، انتقال وجه، درخواست وام، پرداخت قبوض', count: 2 },
-  auditor:  { icon:'🔍', desc:'دسترسی فقط‌خواندنی به تراکنش‌ها، گزارشات و لاگ حسابرسی', count: 1 }
+  admin:    { icon:'bi-crown', desc:'دسترسی کامل به تمام بخش‌ها، پنل ادمین، کنسول SQL و مدیریت کاربران', count: 1 },
+  manager:  { icon:'bi-building', desc:'تأیید وام، گزارشات مالی، مدیریت کاربران (بدون پنل ادمین)', count: 1 },
+  operator: { icon:'bi-person-workspace', desc:'ثبت تراکنش، افتتاح حساب، صدور کارت، مدیریت مشتریان', count: 1 },
+  user:     { icon:'bi-person', desc:'مشاهده حساب خود، انتقال وجه، درخواست وام، پرداخت قبوض', count: 2 },
+  auditor:  { icon:'bi-search', desc:'دسترسی فقط‌خواندنی به تراکنش‌ها، گزارشات و لاگ حسابرسی', count: 1 }
 };
 
 // ─── CRUD-LEVEL ACTION MATRIX ───────────────────────────
@@ -86,8 +86,9 @@ async function apiCall(url, method = 'GET', body = null) {
 let toastT;
 function showToast(msg, type = '') {
   const t = document.getElementById('toast');
-  const icons = { ok: '✅', err: '❌', warn: '⚠️', '': 'ℹ️' };
-  t.textContent = (icons[type] || 'ℹ️') + ' ' + msg;
+  const icons = { ok: 'bi-check-circle', err: 'bi-x-circle', warn: 'bi-exclamation-triangle', '': 'bi-info-circle' };
+  const iconClass = icons[type] || 'bi-info-circle';
+  t.innerHTML = '<i class="bi ' + iconClass + '"></i> ' + msg;
   t.className = 'show' + (type ? ' ' + type : '');
   clearTimeout(toastT);
   toastT = setTimeout(() => t.className = '', 3500);
@@ -250,31 +251,31 @@ function renderMiniChart() {
 
 function renderQuickActions() {
   const acts = {
-    admin:   [{i:'💸',t:'ثبت تراکنش',a:"openMo('mo-tx')"},{i:'📋',t:'حساب جدید',a:"openMo('mo-acc')"},{i:'💵',t:'صدور کارت',a:"openMo('mo-card')"},{i:'📊',t:'گزارش‌ها',a:"showPage('reports')"},{i:'⚙️',t:'پنل ادمین',a:"showPage('admin-panel')"},{i:'👮',t:'کاربران',a:"showPage('user-mgmt')"}],
-    manager: [{i:'💸',t:'تراکنش',a:"openMo('mo-tx')"},{i:'👥',t:'مشتریان',a:"showPage('customers')"},{i:'📊',t:'گزارش‌ها',a:"showPage('reports')"},{i:'👮',t:'کاربران',a:"showPage('user-mgmt')"}],
-    operator:[{i:'↔️',t:'تراکنش جدید',a:"openMo('mo-tx')"},{i:'📋',t:'حساب‌ها',a:"showPage('accounts')"},{i:'👥',t:'مشتریان',a:"showPage('customers')"}],
-    user:    [{i:'💸',t:'انتقال وجه',a:"showPage('transfer')"},{i:'📱',t:'پرداخت قبوض',a:"showPage('payments')"},{i:'💳',t:'کارت‌هایم',a:"showPage('cards')"}],
-    auditor: [{i:'🔍',t:'حسابرسی',a:"showPage('audit')"},{i:'📊',t:'گزارش‌ها',a:"showPage('reports')"}]
+    admin:   [{i:'bi-cash-coin',t:'ثبت تراکنش',a:"openMo('mo-tx')"},{i:'bi-clipboard-plus',t:'حساب جدید',a:"openMo('mo-acc')"},{i:'bi-credit-card',t:'صدور کارت',a:"openMo('mo-card')"},{i:'bi-bar-chart',t:'گزارش‌ها',a:"showPage('reports')"},{i:'bi-gear',t:'پنل ادمین',a:"showPage('admin-panel')"},{i:'bi-person-badge',t:'کاربران',a:"showPage('user-mgmt')"}],
+    manager: [{i:'bi-cash-coin',t:'تراکنش',a:"openMo('mo-tx')"},{i:'bi-people',t:'مشتریان',a:"showPage('customers')"},{i:'bi-bar-chart',t:'گزارش‌ها',a:"showPage('reports')"},{i:'bi-person-badge',t:'کاربران',a:"showPage('user-mgmt')"}],
+    operator:[{i:'bi-arrow-left-right',t:'تراکنش جدید',a:"openMo('mo-tx')"},{i:'bi-clipboard-data',t:'حساب‌ها',a:"showPage('accounts')"},{i:'bi-people',t:'مشتریان',a:"showPage('customers')"}],
+    user:    [{i:'bi-send',t:'انتقال وجه',a:"showPage('transfer')"},{i:'bi-phone',t:'پرداخت قبوض',a:"showPage('payments')"},{i:'bi-credit-card',t:'کارت‌هایم',a:"showPage('cards')"}],
+    auditor: [{i:'bi-search',t:'حسابرسی',a:"showPage('audit')"},{i:'bi-bar-chart',t:'گزارش‌ها',a:"showPage('reports')"}]
   };
   const el = document.getElementById('qa-grid');
   if (!el) return;
   el.innerHTML = (acts[currentRole] || []).map(a =>
-    `<div class="qa-btn" onclick="${a.a}"><div class="qa-icon">${a.i}</div><div class="qa-txt">${a.t}</div></div>`
+    `<div class="qa-btn" onclick="${a.a}"><div class="qa-icon"><i class="bi ${a.i}"></i></div><div class="qa-txt">${a.t}</div></div>`
   ).join('');
 }
 
 function renderActivityFeed() {
   const items = [
-    {cls:'act-blue',icon:'💸',txt:'انتقال ۱۵ میلیون از ACC-001',time:'۱۵ دقیقه پیش'},
-    {cls:'act-green',icon:'✅',txt:'حساب جدید افتتاح شد',time:'۳۰ دقیقه پیش'},
-    {cls:'act-gold',icon:'⚠️',txt:'تلاش برداشت بیش از سقف — رد شد',time:'۱ ساعت پیش'},
-    {cls:'act-red',icon:'🔐',txt:'ورود ناموفق — IP: 185.x.x.x',time:'۲ ساعت پیش'},
-    {cls:'act-blue',icon:'🏦',txt:'وام LN-003 تأیید شد',time:'۳ ساعت پیش'},
+    {cls:'act-blue',icon:'bi-cash-coin',txt:'انتقال ۱۵ میلیون از ACC-001',time:'۱۵ دقیقه پیش'},
+    {cls:'act-green',icon:'bi-check-circle',txt:'حساب جدید افتتاح شد',time:'۳۰ دقیقه پیش'},
+    {cls:'act-gold',icon:'bi-exclamation-triangle',txt:'تلاش برداشت بیش از سقف — رد شد',time:'۱ ساعت پیش'},
+    {cls:'act-red',icon:'bi-shield-lock',txt:'ورود ناموفق — IP: 185.x.x.x',time:'۲ ساعت پیش'},
+    {cls:'act-blue',icon:'bi-bank',txt:'وام LN-003 تأیید شد',time:'۳ ساعت پیش'},
   ];
   const el = document.getElementById('activity-feed');
   if (!el) return;
   el.innerHTML = items.map(a =>
-    `<div class="act-item"><div class="act-dot ${a.cls}">${a.icon}</div><div style="flex:1"><div style="font-size:13px">${a.txt}</div><div style="font-size:11px;color:var(--bs-muted)">${a.time}</div></div></div>`
+    `<div class="act-item"><div class="act-dot ${a.cls}"><i class="bi ${a.icon}"></i></div><div style="flex:1"><div style="font-size:13px">${a.txt}</div><div style="font-size:11px;color:var(--bs-muted)">${a.time}</div></div></div>`
   ).join('');
 }
 
@@ -322,7 +323,7 @@ async function updateTrBal() {
   const id = parseInt(sel.value);
   const acc = allAccounts.find(a => (a.id||a.Id) === id);
   const el = document.getElementById('tr-bal');
-  if (el && acc) el.textContent = `💰 موجودی: ${fmt(acc.balance||acc.Balance)} تومان`;
+  if (el && acc) el.textContent = `<i class="bi bi-wallet2"></i> موجودی: ${fmt(acc.balance||acc.Balance)} تومان`;
 }
 
 async function doTransfer() {
@@ -402,8 +403,8 @@ async function loadLoans() {
       <td>${toFa(l.installments||l.Installments)} ماه</td>
       <td><span class="badge ${(l.status||l.Status)==='جاری'?'bg-w':(l.status||l.Status)==='در بررسی'?'bg-g':'bg-ok'}">${l.status||l.Status}</span></td>
       <td>
-        <button class="btn btn-xs" style="background:#E8F5E9;color:#1B5E20;border:none" onclick="loanStatus(${l.id||l.Id},'جاری')">✓ تأیید</button>
-        <button class="btn btn-xs" style="background:#EDE7F6;color:#4A1AAF;border:none" onclick="loanStatus(${l.id||l.Id},'تسویه')">✅ تسویه</button>
+        <button class="btn btn-xs" style="background:#E8F5E9;color:#1B5E20;border:none" onclick="loanStatus(${l.id||l.Id},'جاری')"><i class="bi bi-check-lg"></i> تأیید</button>
+        <button class="btn btn-xs" style="background:#EDE7F6;color:#4A1AAF;border:none" onclick="loanStatus(${l.id||l.Id},'تسویه')"><i class="bi bi-check2-all"></i> تسویه</button>
       </td>
     </tr>`
   ).join('');
@@ -445,7 +446,7 @@ async function loadCards() {
       <td>${fmt(c.dailyLimit||c.DailyLimit)}</td>
       <td>${c.expiryDate||c.ExpiryDate}</td>
       <td><span class="badge ${(c.status||c.Status)==='فعال'?'bg-ok':'bg-no'}">${c.status||c.Status}</span></td>
-      <td><button class="btn btn-outline btn-xs" onclick="toggleCard(${c.id||c.Id})">${(c.status||c.Status)==='فعال'?'🔒 مسدود':'🔓 فعال'}</button></td>
+      <td><button class="btn btn-outline btn-xs" onclick="toggleCard(${c.id||c.Id})">${(c.status||c.Status)==='فعال'?'<i class="bi bi-lock"></i> مسدود':'<i class="bi bi-unlock"></i> فعال'}</button></td>
     </tr>`
   ).join('');
 }
@@ -481,8 +482,8 @@ function renderAccTable(data) {
       <td><span class="badge ${(a.status||a.Status)==='فعال'?'bg-ok':(a.status||a.Status)==='مسدود'?'bg-no':'bg-w'}">${a.status||a.Status}</span></td>
       <td style="font-size:11px">${a.date||a.Date||''}</td>
       <td>
-        <button class="btn btn-outline btn-xs" onclick="showToast('حساب: ${a.accountNumber||a.AccountNumber}')">👁️</button>
-        <button class="btn btn-xs btn-danger" onclick="delAcc(${a.id||a.Id})">🗑️</button>
+        <button class="btn btn-outline btn-xs" onclick="showToast('حساب: ${a.accountNumber||a.AccountNumber}')"><i class="bi bi-eye"></i></button>
+        <button class="btn btn-xs btn-danger" onclick="delAcc(${a.id||a.Id})"><i class="bi bi-trash"></i></button>
       </td>
     </tr>`
   ).join('');
@@ -595,8 +596,8 @@ function renderPendingApprovals(loans, txs) {
       <td><strong>${fmt(l.amount||l.Amount)}</strong></td>
       <td style="font-size:12px">${l.loanType||l.LoanType} — ${toFa(l.installments||l.Installments)} ماه</td>
       <td>
-        <button class="btn btn-xs" style="background:#E8F5E9;color:#1B5E20;border:none" onclick="loanStatus(${l.id||l.Id},'جاری');loadAdminPanel()">✓ تأیید</button>
-        <button class="btn btn-xs btn-danger" onclick="loanStatus(${l.id||l.Id},'رد شده');loadAdminPanel()">✕ رد</button>
+        <button class="btn btn-xs" style="background:#E8F5E9;color:#1B5E20;border:none" onclick="loanStatus(${l.id||l.Id},'جاری');loadAdminPanel()"><i class="bi bi-check-lg"></i> تأیید</button>
+        <button class="btn btn-xs btn-danger" onclick="loanStatus(${l.id||l.Id},'رد شده');loadAdminPanel()"><i class="bi bi-x-lg"></i> رد</button>
       </td>
     </tr>`));
   pendingTx.forEach(t => rows.push(`
@@ -606,10 +607,10 @@ function renderPendingApprovals(loans, txs) {
       <td style="font-size:12px">${t.accountNumber||t.AccountNumber||''}</td>
       <td><strong>${fmt(t.amount||t.Amount)}</strong></td>
       <td style="font-size:12px">${t.description||t.Description||''}</td>
-      <td><button class="btn btn-xs" style="background:#E8F5E9;color:#1B5E20;border:none" onclick="showToast('تراکنش تأیید شد','ok')">✓ تأیید</button></td>
+      <td><button class="btn btn-xs" style="background:#E8F5E9;color:#1B5E20;border:none" onclick="showToast('تراکنش تأیید شد','ok')"><i class="bi bi-check-lg"></i> تأیید</button></td>
     </tr>`));
   document.getElementById('pending-tbody').innerHTML = rows.length ? rows.join('') :
-    `<tr><td colspan="6" style="text-align:center;color:var(--bs-muted);padding:18px">✅ هیچ موردی در انتظار تأیید نیست</td></tr>`;
+    `<tr><td colspan="6" style="text-align:center;color:var(--bs-muted);padding:18px"><i class="bi bi-check-circle"></i> هیچ موردی در انتظار تأیید نیست</td></tr>`;
 }
 
 async function runSQL() {
@@ -653,15 +654,15 @@ async function loadUserMgmt() {
       <td style="font-size:11px">${u.lastLogin||u.LastLogin||'هرگز'}</td>
       <td><span class="badge ${(u.isActive||u.IsActive)?'bg-ok':'bg-no'}">${(u.isActive||u.IsActive)?'آنلاین':'آفلاین'}</span></td>
       <td>
-        <button class="btn btn-outline btn-xs" onclick="showToast('ویرایش: ${u.username||u.Username}')">✏️</button>
-        <button class="btn btn-xs btn-danger" onclick="delUser(${u.id||u.Id})">🗑️</button>
+        <button class="btn btn-outline btn-xs" onclick="showToast('ویرایش: ${u.username||u.Username}')"><i class="bi bi-pencil"></i></button>
+        <button class="btn btn-xs btn-danger" onclick="delUser(${u.id||u.Id})"><i class="bi bi-trash"></i></button>
       </td>
     </tr>`
   ).join('');
   // Permission matrix (page-level)
   const allP = Object.keys(PERM_LABELS);
   document.getElementById('perm-tbody').innerHTML = allP.map(p =>
-    `<tr><td style="font-weight:500">${PERM_LABELS[p]}</td>${['admin','manager','operator','user','auditor'].map(r=>`<td style="text-align:center">${PERMS[r].includes(p)?'<span style="color:var(--bs-green);font-size:14px">✅</span>':'<span style="color:#ddd">—</span>'}</td>`).join('')}</tr>`
+    `<tr><td style="font-weight:500">${PERM_LABELS[p]}</td>${['admin','manager','operator','user','auditor'].map(r=>`<td style="text-align:center">${PERMS[r].includes(p)?'<i class="bi bi-check-lg" style="color:var(--bs-green);font-size:14px"></i>':'<span style="color:#ddd">—</span>'}</td>`).join('')}</tr>`
   ).join('');
 
   // Role overview cards
@@ -670,7 +671,7 @@ async function loadUserMgmt() {
     const info = ROLE_INFO[r];
     const userCount = data.filter(u => (u.role||u.Role) === r).length;
     return `<div style="background:var(--bs-sky);border:1px solid var(--bs-sky2);border-radius:10px;padding:14px;text-align:center">
-      <div style="font-size:26px;margin-bottom:6px">${info.icon}</div>
+      <div style="font-size:26px;margin-bottom:6px;color:var(--bs-navy)"><i class="bi ${info.icon}"></i></div>
       <div style="font-weight:700;font-size:13px;color:var(--bs-navy);margin-bottom:4px">${roleNames[r]}</div>
       <div style="font-size:11px;color:var(--bs-muted);line-height:1.6;margin-bottom:8px;min-height:50px">${info.desc}</div>
       <span class="badge bg-b">${toFa(userCount)} کاربر</span>
@@ -719,7 +720,7 @@ function renderSettingsPerms() {
   if (!el) return;
   el.innerHTML = Object.keys(PERM_LABELS).map(k =>
     `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:7px;font-size:12px;font-weight:500;border:1px solid;${perms.includes(k)?'background:#E8F5E9;color:#1B5E20;border-color:#A5D6A7':'background:#FAFAFA;color:#999;border-color:#eee'}">
-      <span>${PERM_LABELS[k]}</span><span>${perms.includes(k)?'✅':'—'}</span>
+      <span>${PERM_LABELS[k]}</span><span>${perms.includes(k)?'<i class="bi bi-check-lg"></i>':'—'}</span>
     </div>`
   ).join('');
 }

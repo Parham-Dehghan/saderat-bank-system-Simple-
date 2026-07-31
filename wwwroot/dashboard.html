@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>بانک صادرات ایران — سامانه مدیریت</title>
 <link rel="stylesheet" href="/css/saderat.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
 <body>
 <div id="app">
@@ -31,30 +32,30 @@
   <!-- Navigation -->
   <div class="nav-sec">
     <div class="nav-lbl">داشبورد</div>
-    <div class="nav-item active" onclick="showPage('dashboard')" data-roles="admin,manager,operator,user,auditor"><span class="nav-icon">🏠</span> داشبورد اصلی</div>
-    <div class="nav-item" onclick="showPage('my-accounts')" data-roles="user,operator,manager,admin"><span class="nav-icon">💳</span> حساب‌های من</div>
+    <div class="nav-item active" onclick="showPage('dashboard')" data-roles="admin,manager,operator,user,auditor"><span class="nav-icon"><i class="bi bi-house-door"></i></span> داشبورد اصلی</div>
+    <div class="nav-item" onclick="showPage('my-accounts')" data-roles="user,operator,manager,admin"><span class="nav-icon"><i class="bi bi-credit-card"></i></span> حساب‌های من</div>
   </div>
   <div class="nav-sec">
     <div class="nav-lbl">خدمات بانکی</div>
-    <div class="nav-item" onclick="showPage('transfer')" data-roles="user,operator,manager,admin"><span class="nav-icon">📤</span> انتقال وجه</div>
-    <div class="nav-item" onclick="showPage('transactions')" data-roles="user,operator,manager,admin,auditor"><span class="nav-icon">↔️</span> تراکنش‌ها<span class="nav-badge" id="tx-badge">۰</span></div>
-    <div class="nav-item" onclick="showPage('loans')" data-roles="user,operator,manager,admin"><span class="nav-icon">🏦</span> وام‌ها</div>
-    <div class="nav-item" onclick="showPage('cards')" data-roles="user,operator,manager,admin"><span class="nav-icon">💵</span> کارت‌ها</div>
-    <div class="nav-item" onclick="showPage('payments')" data-roles="user,operator,manager,admin"><span class="nav-icon">📱</span> پرداخت قبوض</div>
+    <div class="nav-item" onclick="showPage('transfer')" data-roles="user,operator,manager,admin"><span class="nav-icon"><i class="bi bi-send"></i></span> انتقال وجه</div>
+    <div class="nav-item" onclick="showPage('transactions')" data-roles="user,operator,manager,admin,auditor"><span class="nav-icon"><i class="bi bi-arrow-left-right"></i></span> تراکنش‌ها<span class="nav-badge" id="tx-badge">۰</span></div>
+    <div class="nav-item" onclick="showPage('loans')" data-roles="user,operator,manager,admin"><span class="nav-icon"><i class="bi bi-bank"></i></span> وام‌ها</div>
+    <div class="nav-item" onclick="showPage('cards')" data-roles="user,operator,manager,admin"><span class="nav-icon"><i class="bi bi-cash-stack"></i></span> کارت‌ها</div>
+    <div class="nav-item" onclick="showPage('payments')" data-roles="user,operator,manager,admin"><span class="nav-icon"><i class="bi bi-phone"></i></span> پرداخت قبوض</div>
   </div>
   <div class="nav-sec">
     <div class="nav-lbl">مدیریت</div>
-    <div class="nav-item" onclick="showPage('accounts')" data-roles="operator,manager,admin"><span class="nav-icon">📋</span> مدیریت حساب‌ها<span class="nav-badge" id="acc-badge">۰</span></div>
-    <div class="nav-item" onclick="showPage('customers')" data-roles="operator,manager,admin"><span class="nav-icon">👥</span> مشتریان</div>
-    <div class="nav-item" onclick="showPage('reports')" data-roles="manager,admin,auditor"><span class="nav-icon">📊</span> گزارشات</div>
-    <div class="nav-item" onclick="showPage('audit')" data-roles="admin,auditor"><span class="nav-icon">🔍</span> حسابرسی<span class="nav-badge nav-badge-red">!</span></div>
-    <div class="nav-item" onclick="showPage('admin-panel')" data-roles="admin"><span class="nav-icon">⚙️</span> پنل ادمین</div>
-    <div class="nav-item" onclick="showPage('user-mgmt')" data-roles="admin,manager"><span class="nav-icon">👮</span> مدیریت کاربران</div>
-    <div class="nav-item" onclick="showPage('settings')" data-roles="admin,manager,operator,user,auditor"><span class="nav-icon">🔧</span> تنظیمات</div>
+    <div class="nav-item" onclick="showPage('accounts')" data-roles="operator,manager,admin"><span class="nav-icon"><i class="bi bi-clipboard-data"></i></span> مدیریت حساب‌ها<span class="nav-badge" id="acc-badge">۰</span></div>
+    <div class="nav-item" onclick="showPage('customers')" data-roles="operator,manager,admin"><span class="nav-icon"><i class="bi bi-people"></i></span> مشتریان</div>
+    <div class="nav-item" onclick="showPage('reports')" data-roles="manager,admin,auditor"><span class="nav-icon"><i class="bi bi-bar-chart"></i></span> گزارشات</div>
+    <div class="nav-item" onclick="showPage('audit')" data-roles="admin,auditor"><span class="nav-icon"><i class="bi bi-search"></i></span> حسابرسی<span class="nav-badge nav-badge-red">!</span></div>
+    <div class="nav-item" onclick="showPage('admin-panel')" data-roles="admin"><span class="nav-icon"><i class="bi bi-gear"></i></span> پنل ادمین</div>
+    <div class="nav-item" onclick="showPage('user-mgmt')" data-roles="admin,manager"><span class="nav-icon"><i class="bi bi-person-badge"></i></span> مدیریت کاربران</div>
+    <div class="nav-item" onclick="showPage('settings')" data-roles="admin,manager,operator,user,auditor"><span class="nav-icon"><i class="bi bi-tools"></i></span> تنظیمات</div>
   </div>
 
   <div style="padding:10px 12px;border-top:1px solid rgba(255,255,255,0.08)">
-    <button class="btn btn-danger btn-sm" style="width:100%" onclick="logout()">🚪 خروج</button>
+    <button class="btn btn-danger btn-sm" style="width:100%" onclick="logout()"><i class="bi bi-box-arrow-right"></i> خروج</button>
   </div>
   <div class="sb-footer">نسخه ۲.۵.۰ — ASP.NET 8 + SQLite<br>© ۱۴۰۴ بانک صادرات ایران</div>
 </div>
@@ -66,7 +67,7 @@
     <img src="/images/saderat-logo.png" alt="Saderat" style="width:28px;height:28px;object-fit:contain;">
     <div class="tb-title" id="page-title">داشبورد اصلی</div>
     <div class="tb-badge">زنده</div>
-    <div class="tb-db" id="db-status">SQLite: متصل ✓</div>
+    <div class="tb-db" id="db-status">SQLite: متصل <i class="bi bi-check-circle-fill" style="color:#4CAF50;font-size:11px"></i></div>
     <div class="tb-user" id="topbar-user">
       <div class="uav uav-admin" id="tb-av">م</div>
       <div>
@@ -81,34 +82,34 @@
 
     <!-- ══ DASHBOARD ══ -->
     <div class="page active" id="page-dashboard">
-      <div class="alert alert-info" id="role-banner">🏛️ خوش آمدید — شما با نقش <strong id="rb-role">ادمین</strong> وارد شده‌اید.</div>
+      <div class="alert alert-info" id="role-banner"><i class="bi bi-building"></i> خوش آمدید — شما با نقش <strong id="rb-role">ادمین</strong> وارد شده‌اید.</div>
       <div class="stats-grid">
-        <div class="stat-card gold"><div class="stat-icon">💰</div><div class="stat-val" id="ds-bal">۰</div><div class="stat-lbl">مجموع موجودی (تومان)</div><div class="stat-chg up">↑ ۱۲.۵٪</div></div>
-        <div class="stat-card navy"><div class="stat-icon">📋</div><div class="stat-val" id="ds-acc">۰</div><div class="stat-lbl">حساب‌های فعال</div><div class="stat-chg up">↑ ۳ جدید</div></div>
-        <div class="stat-card green"><div class="stat-icon">🔄</div><div class="stat-val" id="ds-tx">۰</div><div class="stat-lbl">تراکنش‌ها</div><div class="stat-chg up">↑ ۸ امروز</div></div>
-        <div class="stat-card red"><div class="stat-icon">🏦</div><div class="stat-val" id="ds-loans">۰</div><div class="stat-lbl">وام‌های جاری</div><div class="stat-chg dn">↓ ۲ تسویه</div></div>
+        <div class="stat-card gold"><div class="stat-icon"><i class="bi bi-cash-stack"></i></div><div class="stat-val" id="ds-bal">۰</div><div class="stat-lbl">مجموع موجودی (تومان)</div><div class="stat-chg up"><i class="bi bi-arrow-up"></i> ۱۲.۵٪</div></div>
+        <div class="stat-card navy"><div class="stat-icon"><i class="bi bi-clipboard-check"></i></div><div class="stat-val" id="ds-acc">۰</div><div class="stat-lbl">حساب‌های فعال</div><div class="stat-chg up"><i class="bi bi-arrow-up"></i> ۳ جدید</div></div>
+        <div class="stat-card green"><div class="stat-icon"><i class="bi bi-arrow-repeat"></i></div><div class="stat-val" id="ds-tx">۰</div><div class="stat-lbl">تراکنش‌ها</div><div class="stat-chg up"><i class="bi bi-arrow-up"></i> ۸ امروز</div></div>
+        <div class="stat-card red"><div class="stat-icon"><i class="bi bi-bank"></i></div><div class="stat-val" id="ds-loans">۰</div><div class="stat-lbl">وام‌های جاری</div><div class="stat-chg dn"><i class="bi bi-arrow-down"></i> ۲ تسویه</div></div>
       </div>
       <div style="display:grid;grid-template-columns:2fr 1fr;gap:18px">
         <div class="card">
-          <div class="card-hd"><div class="card-hd-icon">↔️</div><div class="card-title">آخرین تراکنش‌ها</div><button class="btn btn-outline btn-sm" onclick="showPage('transactions')">همه ←</button></div>
+          <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-arrow-left-right"></i></div><div class="card-title">آخرین تراکنش‌ها</div><button class="btn btn-outline btn-sm" onclick="showPage('transactions')">همه <i class="bi bi-arrow-left"></i></button></div>
           <div class="card-body" style="padding:0"><table class="tbl"><thead><tr><th>کد</th><th>نوع</th><th>مبلغ</th><th>وضعیت</th><th>زمان</th></tr></thead><tbody id="dash-tx"></tbody></table></div>
         </div>
         <div>
           <div class="card">
-            <div class="card-hd"><div class="card-hd-icon">📊</div><div class="card-title">نمودار هفتگی</div></div>
+            <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-bar-chart"></i></div><div class="card-title">نمودار هفتگی</div></div>
             <div class="card-body">
               <div class="mch" id="mch"></div>
               <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--bs-muted);margin-top:4px"><span>ش</span><span>ی</span><span>د</span><span>س</span><span>چ</span><span>پ</span><span>ج</span></div>
             </div>
           </div>
           <div class="card">
-            <div class="card-hd"><div class="card-hd-icon">⚡</div><div class="card-title">دسترسی سریع</div></div>
+            <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-lightning-charge"></i></div><div class="card-title">دسترسی سریع</div></div>
             <div class="card-body"><div class="qa-grid" id="qa-grid"></div></div>
           </div>
         </div>
       </div>
       <div class="card">
-        <div class="card-hd"><div class="card-hd-icon">🔔</div><div class="card-title">فعالیت‌های اخیر</div></div>
+        <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-bell"></i></div><div class="card-title">فعالیت‌های اخیر</div></div>
         <div class="card-body" id="activity-feed"></div>
       </div>
     </div>
@@ -124,10 +125,10 @@
         </div>
       </div>
       <div id="my-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px"></div>
-      <div class="card"><div class="card-hd"><div class="card-hd-icon">📋</div><div class="card-title">حساب‌های من</div></div>
+      <div class="card"><div class="card-hd"><div class="card-hd-icon"><i class="bi bi-clipboard-data"></i></div><div class="card-title">حساب‌های من</div></div>
         <div class="card-body" style="padding:0"><table class="tbl"><thead><tr><th>شماره حساب</th><th>نوع</th><th>موجودی</th><th>وضعیت</th><th>تاریخ</th></tr></thead><tbody id="my-accs"></tbody></table></div>
       </div>
-      <div class="card"><div class="card-hd"><div class="card-hd-icon">↔️</div><div class="card-title">تراکنش‌های اخیر من</div></div>
+      <div class="card"><div class="card-hd"><div class="card-hd-icon"><i class="bi bi-arrow-left-right"></i></div><div class="card-title">تراکنش‌های اخیر من</div></div>
         <div class="card-body" style="padding:0"><table class="tbl"><thead><tr><th>نوع</th><th>مبلغ</th><th>توضیحات</th><th>وضعیت</th><th>تاریخ</th></tr></thead><tbody id="my-txs"></tbody></table></div>
       </div>
     </div>
@@ -136,7 +137,7 @@
     <div class="page" id="page-transfer">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
         <div class="card">
-          <div class="card-hd"><div class="card-hd-icon">📤</div><div class="card-title">انتقال وجه</div></div>
+          <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-send"></i></div><div class="card-title">انتقال وجه</div></div>
           <div class="card-body">
             <div class="fgrid" style="gap:14px">
               <div class="fg"><label class="fl">از حساب</label><select class="fc" id="tr-from" onchange="updateTrBal()"></select></div>
@@ -144,17 +145,17 @@
               <div class="fg"><label class="fl">مبلغ (تومان)</label><input class="fc" id="tr-amt" type="number" placeholder="مثلاً ۵۰۰۰۰۰۰"></div>
               <div class="fg"><label class="fl">توضیحات</label><input class="fc" id="tr-desc" placeholder="علت انتقال"></div>
               <div class="fg"><div id="tr-bal" style="padding:9px 12px;background:var(--bs-sky);border-radius:7px;font-size:13px;color:var(--bs-navy)">حساب مبدأ انتخاب کنید</div></div>
-              <button class="btn btn-primary" style="width:100%" onclick="doTransfer()">💸 انتقال وجه</button>
+              <button class="btn btn-primary" style="width:100%" onclick="doTransfer()"><i class="bi bi-send"></i> انتقال وجه</button>
             </div>
           </div>
         </div>
         <div class="card">
-          <div class="card-hd"><div class="card-hd-icon">ℹ️</div><div class="card-title">راهنما</div></div>
+          <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-info-circle"></i></div><div class="card-title">راهنما</div></div>
           <div class="card-body" style="display:flex;flex-direction:column;gap:10px;font-size:13px">
-            <div style="display:flex;gap:10px;padding:10px;background:var(--bs-sky);border-radius:8px">✅ انتقال درون‌بانکی: فوری و رایگان</div>
-            <div style="display:flex;gap:10px;padding:10px;background:var(--bs-sky);border-radius:8px">⚠️ حداکثر روزانه: ۵۰۰ میلیون تومان</div>
-            <div style="display:flex;gap:10px;padding:10px;background:#FFF8E1;border-radius:8px;border:1px solid #FFD54F">🔒 بالای ۱۰۰م نیاز به تأیید مدیر دارد</div>
-            <div style="display:flex;gap:10px;padding:10px;background:var(--bs-sky);border-radius:8px">💡 حداقل موجودی بعد از انتقال: ۱۰,۰۰۰ ت</div>
+            <div style="display:flex;gap:10px;padding:10px;background:var(--bs-sky);border-radius:8px"><i class="bi bi-check-circle"></i> انتقال درون‌بانکی: فوری و رایگان</div>
+            <div style="display:flex;gap:10px;padding:10px;background:var(--bs-sky);border-radius:8px"><i class="bi bi-exclamation-triangle"></i> حداکثر روزانه: ۵۰۰ میلیون تومان</div>
+            <div style="display:flex;gap:10px;padding:10px;background:#FFF8E1;border-radius:8px;border:1px solid #FFD54F"><i class="bi bi-lock"></i> بالای ۱۰۰م نیاز به تأیید مدیر دارد</div>
+            <div style="display:flex;gap:10px;padding:10px;background:var(--bs-sky);border-radius:8px"><i class="bi bi-lightbulb"></i> حداقل موجودی بعد از انتقال: ۱۰,۰۰۰ ت</div>
           </div>
         </div>
       </div>
@@ -163,10 +164,10 @@
     <!-- ══ TRANSACTIONS ══ -->
     <div class="page" id="page-transactions">
       <div class="card">
-        <div class="card-hd"><div class="card-hd-icon">↔️</div><div class="card-title">تراکنش‌ها</div>
-          <div class="srch" style="flex:1;max-width:250px"><span class="sic">🔍</span><input class="si" id="tx-search" placeholder="جستجو..." oninput="filterTx()"></div>
+        <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-arrow-left-right"></i></div><div class="card-title">تراکنش‌ها</div>
+          <div class="srch" style="flex:1;max-width:250px"><span class="sic"><i class="bi bi-search"></i></span><input class="si" id="tx-search" placeholder="جستجو..." oninput="filterTx()"></div>
           <select class="fc" id="tx-filter" style="width:120px" onchange="filterTx()"><option value="">همه</option><option>واریز</option><option>برداشت</option><option>انتقال</option></select>
-          <button class="btn btn-primary btn-sm" id="btn-add-tx" onclick="openMo('mo-tx')">+ ثبت</button>
+          <button class="btn btn-primary btn-sm" id="btn-add-tx" onclick="openMo('mo-tx')"><i class="bi bi-plus-lg"></i> ثبت</button>
         </div>
         <div class="card-body" style="padding:0"><table class="tbl"><thead><tr><th>کد</th><th>حساب</th><th>نوع</th><th>مبلغ</th><th>توضیحات</th><th>وضعیت</th><th>تاریخ</th></tr></thead><tbody id="tx-tbody"></tbody></table></div>
       </div>
@@ -175,7 +176,7 @@
     <!-- ══ LOANS ══ -->
     <div class="page" id="page-loans">
       <div class="card">
-        <div class="card-hd"><div class="card-hd-icon">🏦</div><div class="card-title">وام‌ها و تسهیلات</div><button class="btn btn-primary btn-sm" onclick="openMo('mo-loan')">+ درخواست وام</button></div>
+        <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-bank"></i></div><div class="card-title">وام‌ها و تسهیلات</div><button class="btn btn-primary btn-sm" onclick="openMo('mo-loan')"><i class="bi bi-plus-lg"></i> درخواست وام</button></div>
         <div class="card-body" style="padding:0"><table class="tbl"><thead><tr><th>کد</th><th>متقاضی</th><th>نوع</th><th>مبلغ</th><th>نرخ%</th><th>اقساط</th><th>وضعیت</th><th>عملیات</th></tr></thead><tbody id="loan-tbody"></tbody></table></div>
       </div>
     </div>
@@ -184,7 +185,7 @@
     <div class="page" id="page-cards">
       <div id="cards-display" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px"></div>
       <div class="card">
-        <div class="card-hd"><div class="card-hd-icon">💵</div><div class="card-title">کارت‌های بانکی</div><button class="btn btn-primary btn-sm" onclick="openMo('mo-card')">+ صدور کارت</button></div>
+        <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-credit-card"></i></div><div class="card-title">کارت‌های بانکی</div><button class="btn btn-primary btn-sm" onclick="openMo('mo-card')"><i class="bi bi-plus-lg"></i> صدور کارت</button></div>
         <div class="card-body" style="padding:0"><table class="tbl"><thead><tr><th>شماره کارت</th><th>دارنده</th><th>نوع</th><th>سقف روزانه</th><th>انقضا</th><th>وضعیت</th><th>عملیات</th></tr></thead><tbody id="card-tbody"></tbody></table></div>
       </div>
     </div>
@@ -192,22 +193,22 @@
     <!-- ══ PAYMENTS ══ -->
     <div class="page" id="page-payments">
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px">
-        <div class="qa-btn" onclick="showToast('قبض برق پرداخت شد ✓','ok')"><div class="qa-icon">💡</div><div class="qa-txt">قبض برق</div></div>
-        <div class="qa-btn" onclick="showToast('قبض آب پرداخت شد ✓','ok')"><div class="qa-icon">💧</div><div class="qa-txt">قبض آب</div></div>
-        <div class="qa-btn" onclick="showToast('قبض گاز پرداخت شد ✓','ok')"><div class="qa-icon">🔥</div><div class="qa-txt">قبض گاز</div></div>
-        <div class="qa-btn" onclick="showToast('شارژ موبایل انجام شد ✓','ok')"><div class="qa-icon">📱</div><div class="qa-txt">شارژ موبایل</div></div>
-        <div class="qa-btn" onclick="showToast('مالیات پرداخت شد ✓','ok')"><div class="qa-icon">🏛️</div><div class="qa-txt">مالیات</div></div>
-        <div class="qa-btn" onclick="showToast('بیمه پرداخت شد ✓','ok')"><div class="qa-icon">🛡️</div><div class="qa-txt">بیمه</div></div>
+        <div class="qa-btn" onclick="showToast('قبض برق پرداخت شد','ok')"><div class="qa-icon"><i class="bi bi-lightbulb"></i></div><div class="qa-txt">قبض برق</div></div>
+        <div class="qa-btn" onclick="showToast('قبض آب پرداخت شد','ok')"><div class="qa-icon"><i class="bi bi-droplet"></i></div><div class="qa-txt">قبض آب</div></div>
+        <div class="qa-btn" onclick="showToast('قبض گاز پرداخت شد','ok')"><div class="qa-icon"><i class="bi bi-fire"></i></div><div class="qa-txt">قبض گاز</div></div>
+        <div class="qa-btn" onclick="showToast('شارژ موبایل انجام شد','ok')"><div class="qa-icon"><i class="bi bi-phone"></i></div><div class="qa-txt">شارژ موبایل</div></div>
+        <div class="qa-btn" onclick="showToast('مالیات پرداخت شد','ok')"><div class="qa-icon"><i class="bi bi-building"></i></div><div class="qa-txt">مالیات</div></div>
+        <div class="qa-btn" onclick="showToast('بیمه پرداخت شد','ok')"><div class="qa-icon"><i class="bi bi-shield"></i></div><div class="qa-txt">بیمه</div></div>
       </div>
       <div class="card">
-        <div class="card-hd"><div class="card-hd-icon">📱</div><div class="card-title">پرداخت قبوض</div></div>
+        <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-phone"></i></div><div class="card-title">پرداخت قبوض</div></div>
         <div class="card-body">
           <div class="fgrid fgrid2" style="gap:14px">
             <div class="fg"><label class="fl">نوع قبض</label><select class="fc"><option>برق</option><option>آب</option><option>گاز</option><option>تلفن</option></select></div>
             <div class="fg"><label class="fl">شناسه/مشترک</label><input class="fc" placeholder="شناسه قبض"></div>
             <div class="fg"><label class="fl">مبلغ</label><input class="fc" type="number" placeholder="تومان"></div>
             <div class="fg"><label class="fl">حساب</label><select class="fc" id="pay-acc"></select></div>
-            <button class="btn btn-primary" style="grid-column:span 2;width:100%" onclick="showToast('قبض با موفقیت پرداخت شد','ok')">💳 پرداخت</button>
+            <button class="btn btn-primary" style="grid-column:span 2;width:100%" onclick="showToast('قبض با موفقیت پرداخت شد','ok')"><i class="bi bi-credit-card"></i> پرداخت</button>
           </div>
         </div>
       </div>
@@ -216,9 +217,9 @@
     <!-- ══ ACCOUNTS MGMT ══ -->
     <div class="page" id="page-accounts">
       <div class="card">
-        <div class="card-hd"><div class="card-hd-icon">📋</div><div class="card-title">مدیریت حساب‌ها</div>
-          <div class="srch" style="flex:1;max-width:250px"><span class="sic">🔍</span><input class="si" id="acc-search" placeholder="جستجو..." oninput="filterAccs()"></div>
-          <button class="btn btn-primary btn-sm" onclick="openMo('mo-acc')">+ حساب جدید</button>
+        <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-clipboard-data"></i></div><div class="card-title">مدیریت حساب‌ها</div>
+          <div class="srch" style="flex:1;max-width:250px"><span class="sic"><i class="bi bi-search"></i></span><input class="si" id="acc-search" placeholder="جستجو..." oninput="filterAccs()"></div>
+          <button class="btn btn-primary btn-sm" onclick="openMo('mo-acc')"><i class="bi bi-plus-lg"></i> حساب جدید</button>
         </div>
         <div class="card-body" style="padding:0"><table class="tbl"><thead><tr><th>شماره حساب</th><th>نام</th><th>نوع</th><th>موجودی</th><th>وضعیت</th><th>تاریخ</th><th>عملیات</th></tr></thead><tbody id="acc-tbody"></tbody></table></div>
       </div>
@@ -227,8 +228,8 @@
     <!-- ══ CUSTOMERS ══ -->
     <div class="page" id="page-customers">
       <div class="card">
-        <div class="card-hd"><div class="card-hd-icon">👥</div><div class="card-title">مشتریان</div>
-          <div class="srch" style="flex:1;max-width:250px"><span class="sic">🔍</span><input class="si" id="cust-search" placeholder="جستجو..." oninput="filterCusts()"></div>
+        <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-people"></i></div><div class="card-title">مشتریان</div>
+          <div class="srch" style="flex:1;max-width:250px"><span class="sic"><i class="bi bi-search"></i></span><input class="si" id="cust-search" placeholder="جستجو..." oninput="filterCusts()"></div>
         </div>
         <div class="card-body" style="padding:0"><table class="tbl"><thead><tr><th>شناسه</th><th>نام</th><th>نقش</th><th>ایمیل</th><th>آخرین ورود</th><th>وضعیت</th></tr></thead><tbody id="cust-tbody"></tbody></table></div>
       </div>
@@ -243,16 +244,16 @@
         <div class="stat-card gold"><div class="stat-val" id="rep-avg">۰</div><div class="stat-lbl">میانگین تراکنش</div></div>
       </div>
       <div class="card">
-        <div class="card-hd"><div class="card-hd-icon">📊</div><div class="card-title">بالاترین موجودی‌ها</div></div>
+        <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-bar-chart"></i></div><div class="card-title">بالاترین موجودی‌ها</div></div>
         <div class="card-body" style="padding:0"><table class="tbl"><thead><tr><th>#</th><th>نام</th><th>شماره حساب</th><th>نوع</th><th>موجودی</th></tr></thead><tbody id="top-accs"></tbody></table></div>
       </div>
     </div>
 
     <!-- ══ AUDIT ══ -->
     <div class="page" id="page-audit">
-      <div class="alert alert-warn">⚠️ دسترسی محدود — تمام فعالیت‌های این صفحه ثبت می‌شود.</div>
+      <div class="alert alert-warn"><i class="bi bi-exclamation-triangle"></i> دسترسی محدود — تمام فعالیت‌های این صفحه ثبت می‌شود.</div>
       <div class="card">
-        <div class="card-hd"><div class="card-hd-icon">🔍</div><div class="card-title">گزارش حسابرسی</div><button class="btn btn-outline btn-sm" onclick="showToast('گزارش صادر شد','ok')">📤 صادر کردن</button></div>
+        <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-search"></i></div><div class="card-title">گزارش حسابرسی</div><button class="btn btn-outline btn-sm" onclick="showToast('گزارش صادر شد','ok')"><i class="bi bi-download"></i> صادر کردن</button></div>
         <div class="card-body" style="padding:0"><table class="tbl"><thead><tr><th>زمان</th><th>کاربر</th><th>نقش</th><th>عملیات</th><th>جزئیات</th><th>IP</th></tr></thead><tbody id="audit-tbody"></tbody></table></div>
       </div>
     </div>
@@ -261,13 +262,13 @@
     <div class="page" id="page-admin-panel">
       <!-- Pending Approvals -->
       <div class="card">
-        <div class="card-hd"><div class="card-hd-icon">⏳</div><div class="card-title">در انتظار تأیید</div><span class="badge bg-w" id="pending-count-badge">۰ مورد</span></div>
+        <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-hourglass-split"></i></div><div class="card-title">در انتظار تأیید</div><span class="badge bg-w" id="pending-count-badge">۰ مورد</span></div>
         <div class="card-body" style="padding:0"><table class="tbl"><thead><tr><th>نوع</th><th>کد</th><th>متقاضی</th><th>مبلغ</th><th>توضیحات</th><th>عملیات</th></tr></thead><tbody id="pending-tbody"></tbody></table></div>
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px">
         <div class="card">
-          <div class="card-hd"><div class="card-hd-icon">🗄️</div><div class="card-title">وضعیت SQLite</div></div>
+          <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-database"></i></div><div class="card-title">وضعیت SQLite</div></div>
           <div class="card-body">
             <div style="display:grid;gap:9px;font-size:13px" id="db-info">
               <div style="display:flex;justify-content:space-between;padding:9px;background:var(--bs-sky);border-radius:7px;border:1px solid var(--bs-sky2)"><span style="color:var(--bs-muted)">موتور</span><strong>SQLite 3.45</strong></div>
@@ -280,22 +281,22 @@
           </div>
         </div>
         <div class="card">
-          <div class="card-hd"><div class="card-hd-icon">🔧</div><div class="card-title">عملیات سیستم</div></div>
+          <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-tools"></i></div><div class="card-title">عملیات سیستم</div></div>
           <div class="card-body" style="display:flex;flex-direction:column;gap:9px">
-            <button class="btn btn-outline" style="width:100%" onclick="showToast('پشتیبان‌گیری انجام شد ✓','ok')">💾 پشتیبان‌گیری SQLite</button>
-            <button class="btn btn-outline" style="width:100%" onclick="showToast('CSV صادر شد ✓','ok')">📤 صادر کردن CSV</button>
-            <button class="btn btn-outline" style="width:100%" onclick="showToast('ایندکس‌ها بازسازی شد','ok')">⚡ بهینه‌سازی</button>
-            <button class="btn btn-outline" style="width:100%" onclick="loadDashboard()">🔄 به‌روزرسانی آمار</button>
+            <button class="btn btn-outline" style="width:100%" onclick="showToast('پشتیبان‌گیری انجام شد','ok')"><i class="bi bi-hdd"></i> پشتیبان‌گیری SQLite</button>
+            <button class="btn btn-outline" style="width:100%" onclick="showToast('CSV صادر شد','ok')"><i class="bi bi-download"></i> صادر کردن CSV</button>
+            <button class="btn btn-outline" style="width:100%" onclick="showToast('ایندکس‌ها بازسازی شد','ok')"><i class="bi bi-lightning"></i> بهینه‌سازی</button>
+            <button class="btn btn-outline" style="width:100%" onclick="loadDashboard()"><i class="bi bi-arrow-repeat"></i> به‌روزرسانی آمار</button>
           </div>
         </div>
       </div>
       <!-- SQL Console -->
       <div class="card">
-        <div class="card-hd"><div class="card-hd-icon">💻</div><div class="card-title">کنسول SQL (شبیه‌ساز)</div></div>
+        <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-terminal"></i></div><div class="card-title">کنسول SQL (شبیه‌ساز)</div></div>
         <div class="card-body">
           <textarea id="sql-in" class="fc" style="font-family:monospace;font-size:12px;height:65px;resize:none" placeholder="SELECT * FROM accounts;"></textarea>
           <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-            <button class="btn btn-primary btn-sm" onclick="runSQL()">▶ اجرا</button>
+            <button class="btn btn-primary btn-sm" onclick="runSQL()"><i class="bi bi-play-fill"></i> اجرا</button>
             <button class="btn btn-outline btn-sm" onclick="document.getElementById('sql-in').value='SELECT * FROM Accounts;'">حساب‌ها</button>
             <button class="btn btn-outline btn-sm" onclick="document.getElementById('sql-in').value='SELECT * FROM Transactions ORDER BY CreatedAt DESC LIMIT 10;'">تراکنش‌ها</button>
             <button class="btn btn-outline btn-sm" onclick="document.getElementById('sql-in').value='SELECT COUNT(*) as Total, SUM(Balance) as TotalBalance FROM Accounts;'">آمار کلی</button>
@@ -305,15 +306,15 @@
       </div>
       <!-- Schema -->
       <div class="card" style="margin-top:18px">
-        <div class="card-hd"><div class="card-hd-icon">🗂️</div><div class="card-title">ساختار جداول SQLite</div></div>
+        <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-folder2-open"></i></div><div class="card-title">ساختار جداول SQLite</div></div>
         <div class="card-body">
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
-            <div style="background:var(--bs-sky);border:1px solid var(--bs-sky2);border-radius:8px;padding:12px"><div style="font-weight:700;color:var(--bs-navy);margin-bottom:6px;font-size:13px">📋 Accounts</div><div style="font-size:11px;color:var(--bs-muted);display:flex;flex-direction:column;gap:2px"><span>🔑 Id INTEGER PK</span><span>AccountNumber TEXT</span><span>AccountType TEXT</span><span>Balance REAL</span><span>Status TEXT</span><span>CreatedAt TEXT</span><span>UserId INTEGER FK</span></div></div>
-            <div style="background:var(--bs-sky);border:1px solid var(--bs-sky2);border-radius:8px;padding:12px"><div style="font-weight:700;color:var(--bs-navy);margin-bottom:6px;font-size:13px">↔️ Transactions</div><div style="font-size:11px;color:var(--bs-muted);display:flex;flex-direction:column;gap:2px"><span>🔑 Id INTEGER PK</span><span>TransactionCode TEXT</span><span>Type TEXT</span><span>Amount REAL</span><span>Description TEXT</span><span>Status TEXT</span><span>AccountId INTEGER FK</span></div></div>
-            <div style="background:var(--bs-sky);border:1px solid var(--bs-sky2);border-radius:8px;padding:12px"><div style="font-weight:700;color:var(--bs-navy);margin-bottom:6px;font-size:13px">👥 Users</div><div style="font-size:11px;color:var(--bs-muted);display:flex;flex-direction:column;gap:2px"><span>🔑 Id INTEGER PK</span><span>Username TEXT UNIQUE</span><span>PasswordHash TEXT</span><span>FullName TEXT</span><span>Email TEXT</span><span>Role TEXT</span><span>IsActive BOOLEAN</span></div></div>
-            <div style="background:var(--bs-sky);border:1px solid var(--bs-sky2);border-radius:8px;padding:12px"><div style="font-weight:700;color:var(--bs-navy);margin-bottom:6px;font-size:13px">🏦 Loans</div><div style="font-size:11px;color:var(--bs-muted);display:flex;flex-direction:column;gap:2px"><span>🔑 Id INTEGER PK</span><span>LoanCode TEXT</span><span>LoanType TEXT</span><span>Amount REAL</span><span>InterestRate REAL</span><span>Installments INT</span><span>Status TEXT</span></div></div>
-            <div style="background:var(--bs-sky);border:1px solid var(--bs-sky2);border-radius:8px;padding:12px"><div style="font-weight:700;color:var(--bs-navy);margin-bottom:6px;font-size:13px">💵 Cards</div><div style="font-size:11px;color:var(--bs-muted);display:flex;flex-direction:column;gap:2px"><span>🔑 Id INTEGER PK</span><span>CardNumber TEXT</span><span>CardType TEXT</span><span>DailyLimit REAL</span><span>ExpiryDate TEXT</span><span>Status TEXT</span><span>AccountId INTEGER FK</span></div></div>
-            <div style="background:var(--bs-sky);border:1px solid var(--bs-sky2);border-radius:8px;padding:12px"><div style="font-weight:700;color:var(--bs-navy);margin-bottom:6px;font-size:13px">📋 AuditLogs</div><div style="font-size:11px;color:var(--bs-muted);display:flex;flex-direction:column;gap:2px"><span>🔑 Id INTEGER PK</span><span>Action TEXT</span><span>Detail TEXT</span><span>IpAddress TEXT</span><span>CreatedAt TEXT</span><span>UserId INTEGER FK</span></div></div>
+            <div style="background:var(--bs-sky);border:1px solid var(--bs-sky2);border-radius:8px;padding:12px"><div style="font-weight:700;color:var(--bs-navy);margin-bottom:6px;font-size:13px"><i class="bi bi-clipboard-data"></i> Accounts</div><div style="font-size:11px;color:var(--bs-muted);display:flex;flex-direction:column;gap:2px"><span><i class="bi bi-key"></i> Id INTEGER PK</span><span>AccountNumber TEXT</span><span>AccountType TEXT</span><span>Balance REAL</span><span>Status TEXT</span><span>CreatedAt TEXT</span><span>UserId INTEGER FK</span></div></div>
+            <div style="background:var(--bs-sky);border:1px solid var(--bs-sky2);border-radius:8px;padding:12px"><div style="font-weight:700;color:var(--bs-navy);margin-bottom:6px;font-size:13px"><i class="bi bi-arrow-left-right"></i> Transactions</div><div style="font-size:11px;color:var(--bs-muted);display:flex;flex-direction:column;gap:2px"><span><i class="bi bi-key"></i> Id INTEGER PK</span><span>TransactionCode TEXT</span><span>Type TEXT</span><span>Amount REAL</span><span>Description TEXT</span><span>Status TEXT</span><span>AccountId INTEGER FK</span></div></div>
+            <div style="background:var(--bs-sky);border:1px solid var(--bs-sky2);border-radius:8px;padding:12px"><div style="font-weight:700;color:var(--bs-navy);margin-bottom:6px;font-size:13px"><i class="bi bi-people"></i> Users</div><div style="font-size:11px;color:var(--bs-muted);display:flex;flex-direction:column;gap:2px"><span><i class="bi bi-key"></i> Id INTEGER PK</span><span>Username TEXT UNIQUE</span><span>PasswordHash TEXT</span><span>FullName TEXT</span><span>Email TEXT</span><span>Role TEXT</span><span>IsActive BOOLEAN</span></div></div>
+            <div style="background:var(--bs-sky);border:1px solid var(--bs-sky2);border-radius:8px;padding:12px"><div style="font-weight:700;color:var(--bs-navy);margin-bottom:6px;font-size:13px"><i class="bi bi-bank"></i> Loans</div><div style="font-size:11px;color:var(--bs-muted);display:flex;flex-direction:column;gap:2px"><span><i class="bi bi-key"></i> Id INTEGER PK</span><span>LoanCode TEXT</span><span>LoanType TEXT</span><span>Amount REAL</span><span>InterestRate REAL</span><span>Installments INT</span><span>Status TEXT</span></div></div>
+            <div style="background:var(--bs-sky);border:1px solid var(--bs-sky2);border-radius:8px;padding:12px"><div style="font-weight:700;color:var(--bs-navy);margin-bottom:6px;font-size:13px"><i class="bi bi-credit-card"></i> Cards</div><div style="font-size:11px;color:var(--bs-muted);display:flex;flex-direction:column;gap:2px"><span><i class="bi bi-key"></i> Id INTEGER PK</span><span>CardNumber TEXT</span><span>CardType TEXT</span><span>DailyLimit REAL</span><span>ExpiryDate TEXT</span><span>Status TEXT</span><span>AccountId INTEGER FK</span></div></div>
+            <div style="background:var(--bs-sky);border:1px solid var(--bs-sky2);border-radius:8px;padding:12px"><div style="font-weight:700;color:var(--bs-navy);margin-bottom:6px;font-size:13px"><i class="bi bi-journal-text"></i> AuditLogs</div><div style="font-size:11px;color:var(--bs-muted);display:flex;flex-direction:column;gap:2px"><span><i class="bi bi-key"></i> Id INTEGER PK</span><span>Action TEXT</span><span>Detail TEXT</span><span>IpAddress TEXT</span><span>CreatedAt TEXT</span><span>UserId INTEGER FK</span></div></div>
           </div>
         </div>
       </div>
@@ -322,13 +323,13 @@
     <!-- ══ USER MGMT ══ -->
     <div class="page" id="page-user-mgmt">
       <div class="card">
-        <div class="card-hd"><div class="card-hd-icon">👮</div><div class="card-title">مدیریت کاربران سیستم</div><button class="btn btn-primary btn-sm" onclick="openMo('mo-user')">+ کاربر جدید</button></div>
+        <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-person-badge"></i></div><div class="card-title">مدیریت کاربران سیستم</div><button class="btn btn-primary btn-sm" onclick="openMo('mo-user')"><i class="bi bi-plus-lg"></i> کاربر جدید</button></div>
         <div class="card-body" style="padding:0"><table class="tbl"><thead><tr><th>کاربر</th><th>نقش</th><th>ایمیل</th><th>آخرین ورود</th><th>وضعیت</th><th>عملیات</th></tr></thead><tbody id="user-tbody"></tbody></table></div>
       </div>
 
       <!-- Role Cards Overview -->
       <div class="card" style="margin-top:18px">
-        <div class="card-hd"><div class="card-hd-icon">🛡️</div><div class="card-title">نقش‌های تعریف‌شده در سیستم</div></div>
+        <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-shield-check"></i></div><div class="card-title">نقش‌های تعریف‌شده در سیستم</div></div>
         <div class="card-body">
           <div id="role-cards" style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px"></div>
         </div>
@@ -336,7 +337,7 @@
 
       <!-- Permission Matrix: Page Access -->
       <div class="card" style="margin-top:18px">
-        <div class="card-hd"><div class="card-hd-icon">🔐</div><div class="card-title">ماتریس دسترسی به صفحات</div></div>
+        <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-shield-lock"></i></div><div class="card-title">ماتریس دسترسی به صفحات</div></div>
         <div class="card-body" style="overflow-x:auto">
           <table class="tbl" style="min-width:600px;font-size:12px">
             <thead><tr><th>بخش</th><th>ادمین</th><th>مدیر</th><th>اپراتور</th><th>کاربر</th><th>حسابرس</th></tr></thead>
@@ -347,9 +348,9 @@
 
       <!-- Permission Matrix: Action Level (CRUD + Approve) -->
       <div class="card" style="margin-top:18px">
-        <div class="card-hd"><div class="card-hd-icon">⚙️</div><div class="card-title">ماتریس دسترسی عملیاتی (CRUD)</div></div>
+        <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-gear"></i></div><div class="card-title">ماتریس دسترسی عملیاتی (CRUD)</div></div>
         <div class="card-body" style="overflow-x:auto">
-          <div class="alert alert-info" style="margin-bottom:12px">📌 این جدول نشان می‌دهد هر نقش روی هر منبع داده چه عملیاتی می‌تواند انجام دهد: مشاهده (R)، ایجاد (C)، ویرایش (U)، حذف (D)، تأیید (A)</div>
+          <div class="alert alert-info" style="margin-bottom:12px"><i class="bi bi-pin-angle"></i> این جدول نشان می‌دهد هر نقش روی هر منبع داده چه عملیاتی می‌تواند انجام دهد: مشاهده (R)، ایجاد (C)، ویرایش (U)، حذف (D)، تأیید (A)</div>
           <table class="tbl" style="min-width:700px;font-size:12px">
             <thead><tr><th>منبع داده</th><th>ادمین</th><th>مدیر</th><th>اپراتور</th><th>کاربر</th><th>حسابرس</th></tr></thead>
             <tbody id="crud-tbody"></tbody>
@@ -362,19 +363,19 @@
     <div class="page" id="page-settings">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
         <div class="card">
-          <div class="card-hd"><div class="card-hd-icon">🔧</div><div class="card-title">تنظیمات بانک</div></div>
+          <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-tools"></i></div><div class="card-title">تنظیمات بانک</div></div>
           <div class="card-body">
             <div class="fgrid" style="gap:13px">
               <div class="fg"><label class="fl">نام بانک</label><input class="fc" value="بانک صادرات ایران"></div>
               <div class="fg"><label class="fl">کد شعبه</label><input class="fc" value="۰۰۱-تهران-مرکزی"></div>
               <div class="fg"><label class="fl">ایمیل مدیر</label><input class="fc" value="admin@saderat.ir"></div>
               <div class="fg"><label class="fl">نرخ سود پایه %</label><input class="fc" value="23" type="number"></div>
-              <button class="btn btn-primary" style="width:100%" onclick="showToast('تنظیمات ذخیره شد ✓','ok')">💾 ذخیره</button>
+              <button class="btn btn-primary" style="width:100%" onclick="showToast('تنظیمات ذخیره شد','ok')"><i class="bi bi-save"></i> ذخیره</button>
             </div>
           </div>
         </div>
         <div class="card">
-          <div class="card-hd"><div class="card-hd-icon">👤</div><div class="card-title">پروفایل و دسترسی‌ها</div></div>
+          <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-person"></i></div><div class="card-title">پروفایل و دسترسی‌ها</div></div>
           <div class="card-body">
             <div style="text-align:center;margin-bottom:16px">
               <div class="uav uav-admin" style="width:56px;height:56px;font-size:22px;margin:0 auto 8px" id="sett-av">م</div>
@@ -394,50 +395,50 @@
 <!-- ═══ MODALS ═══ -->
 <!-- TX -->
 <div class="mo" id="mo-tx"><div class="mo-box">
-  <div class="mo-hd"><span>↔️</span><div class="mo-title">ثبت تراکنش</div><button class="btn btn-outline btn-sm" onclick="closeMo('mo-tx')">✕</button></div>
+  <div class="mo-hd"><span><i class="bi bi-arrow-left-right"></i></span><div class="mo-title">ثبت تراکنش</div><button class="btn btn-outline btn-sm" onclick="closeMo('mo-tx')"><i class="bi bi-x-lg"></i></button></div>
   <div class="mo-body"><div class="fgrid fgrid2" style="gap:13px">
     <div class="fg"><label class="fl">حساب</label><select class="fc" id="ntx-acc"></select></div>
     <div class="fg"><label class="fl">نوع</label><select class="fc" id="ntx-type"><option>واریز</option><option>برداشت</option></select></div>
     <div class="fg"><label class="fl">مبلغ</label><input class="fc" id="ntx-amt" type="number" placeholder="تومان"></div>
     <div class="fg"><label class="fl">توضیحات</label><input class="fc" id="ntx-desc" placeholder="توضیحات"></div>
   </div></div>
-  <div class="mo-ft"><button class="btn btn-outline" onclick="closeMo('mo-tx')">انصراف</button><button class="btn btn-primary" onclick="addTx()">✅ ثبت</button></div>
+  <div class="mo-ft"><button class="btn btn-outline" onclick="closeMo('mo-tx')">انصراف</button><button class="btn btn-primary" onclick="addTx()"><i class="bi bi-check-lg"></i> ثبت</button></div>
 </div></div>
 <!-- Loan -->
 <div class="mo" id="mo-loan"><div class="mo-box">
-  <div class="mo-hd"><span>🏦</span><div class="mo-title">درخواست وام</div><button class="btn btn-outline btn-sm" onclick="closeMo('mo-loan')">✕</button></div>
+  <div class="mo-hd"><span><i class="bi bi-bank"></i></span><div class="mo-title">درخواست وام</div><button class="btn btn-outline btn-sm" onclick="closeMo('mo-loan')"><i class="bi bi-x-lg"></i></button></div>
   <div class="mo-body"><div class="fgrid fgrid2" style="gap:13px">
     <div class="fg"><label class="fl">نوع وام</label><select class="fc" id="nl-type"><option>مسکن</option><option>خودرو</option><option>ازدواج</option><option>کسب‌وکار</option><option>تحصیلی</option><option>قرض‌الحسنه</option></select></div>
     <div class="fg"><label class="fl">مبلغ</label><input class="fc" id="nl-amt" type="number" placeholder="تومان"></div>
     <div class="fg"><label class="fl">تعداد اقساط</label><input class="fc" id="nl-inst" type="number" value="12"></div>
     <div class="fg"><label class="fl">نرخ سود %</label><input class="fc" id="nl-rate" type="number" value="18"></div>
   </div></div>
-  <div class="mo-ft"><button class="btn btn-outline" onclick="closeMo('mo-loan')">انصراف</button><button class="btn btn-primary" onclick="addLoan()">✅ ثبت</button></div>
+  <div class="mo-ft"><button class="btn btn-outline" onclick="closeMo('mo-loan')">انصراف</button><button class="btn btn-primary" onclick="addLoan()"><i class="bi bi-check-lg"></i> ثبت</button></div>
 </div></div>
 <!-- Card -->
 <div class="mo" id="mo-card"><div class="mo-box">
-  <div class="mo-hd"><span>💳</span><div class="mo-title">صدور کارت</div><button class="btn btn-outline btn-sm" onclick="closeMo('mo-card')">✕</button></div>
+  <div class="mo-hd"><span><i class="bi bi-credit-card"></i></span><div class="mo-title">صدور کارت</div><button class="btn btn-outline btn-sm" onclick="closeMo('mo-card')"><i class="bi bi-x-lg"></i></button></div>
   <div class="mo-body"><div class="fgrid fgrid2" style="gap:13px">
     <div class="fg"><label class="fl">حساب</label><select class="fc" id="nc-acc"></select></div>
     <div class="fg"><label class="fl">نوع</label><select class="fc" id="nc-type"><option>نقدی</option><option>اعتباری</option><option>مجازی</option></select></div>
     <div class="fg"><label class="fl">سقف روزانه</label><input class="fc" id="nc-limit" type="number" value="5000000"></div>
   </div></div>
-  <div class="mo-ft"><button class="btn btn-outline" onclick="closeMo('mo-card')">انصراف</button><button class="btn btn-primary" onclick="addCard()">✅ صدور</button></div>
+  <div class="mo-ft"><button class="btn btn-outline" onclick="closeMo('mo-card')">انصراف</button><button class="btn btn-primary" onclick="addCard()"><i class="bi bi-check-lg"></i> صدور</button></div>
 </div></div>
 <!-- Account -->
 <div class="mo" id="mo-acc"><div class="mo-box">
-  <div class="mo-hd"><span>📋</span><div class="mo-title">افتتاح حساب</div><button class="btn btn-outline btn-sm" onclick="closeMo('mo-acc')">✕</button></div>
+  <div class="mo-hd"><span><i class="bi bi-clipboard"></i></span><div class="mo-title">افتتاح حساب</div><button class="btn btn-outline btn-sm" onclick="closeMo('mo-acc')"><i class="bi bi-x-lg"></i></button></div>
   <div class="mo-body"><div class="fgrid fgrid2" style="gap:13px">
     <div class="fg"><label class="fl">نوع حساب</label><select class="fc" id="na-type"><option>جاری</option><option>پس‌انداز</option><option>کوتاه‌مدت</option><option>قرض‌الحسنه</option></select></div>
     <div class="fg"><label class="fl">موجودی اولیه</label><input class="fc" id="na-bal" type="number" placeholder="تومان"></div>
     <div class="fg"><label class="fl">کاربر (شناسه)</label><input class="fc" id="na-uid" type="number" placeholder="شناسه کاربر"></div>
     <div class="fg"><label class="fl">وضعیت</label><select class="fc" id="na-status"><option>فعال</option><option>غیرفعال</option></select></div>
   </div></div>
-  <div class="mo-ft"><button class="btn btn-outline" onclick="closeMo('mo-acc')">انصراف</button><button class="btn btn-primary" onclick="addAcc()">✅ افتتاح</button></div>
+  <div class="mo-ft"><button class="btn btn-outline" onclick="closeMo('mo-acc')">انصراف</button><button class="btn btn-primary" onclick="addAcc()"><i class="bi bi-check-lg"></i> افتتاح</button></div>
 </div></div>
 <!-- User -->
 <div class="mo" id="mo-user"><div class="mo-box">
-  <div class="mo-hd"><span>👮</span><div class="mo-title">کاربر جدید</div><button class="btn btn-outline btn-sm" onclick="closeMo('mo-user')">✕</button></div>
+  <div class="mo-hd"><span><i class="bi bi-person-badge"></i></span><div class="mo-title">کاربر جدید</div><button class="btn btn-outline btn-sm" onclick="closeMo('mo-user')"><i class="bi bi-x-lg"></i></button></div>
   <div class="mo-body"><div class="fgrid fgrid2" style="gap:13px">
     <div class="fg"><label class="fl">نام کاربری</label><input class="fc" id="nu-u" placeholder="username"></div>
     <div class="fg"><label class="fl">نام کامل</label><input class="fc" id="nu-n" placeholder="نام کامل"></div>
@@ -445,10 +446,10 @@
     <div class="fg"><label class="fl">نقش</label><select class="fc" id="nu-r"><option value="operator">اپراتور</option><option value="user">کاربر</option><option value="manager">مدیر شعبه</option><option value="auditor">حسابرس</option><option value="admin">ادمین</option></select></div>
     <div class="fg" style="grid-column:span 2"><label class="fl">رمز عبور</label><input class="fc" type="password" id="nu-p" placeholder="حداقل ۸ کاراکتر"></div>
   </div></div>
-  <div class="mo-ft"><button class="btn btn-outline" onclick="closeMo('mo-user')">انصراف</button><button class="btn btn-primary" onclick="addUser()">✅ ایجاد</button></div>
+  <div class="mo-ft"><button class="btn btn-outline" onclick="closeMo('mo-user')">انصراف</button><button class="btn btn-primary" onclick="addUser()"><i class="bi bi-check-lg"></i> ایجاد</button></div>
 </div></div>
 
-<div id="toast">✅</div>
+<div id="toast"><i class="bi bi-check-circle"></i></div>
 <script src="/js/app.js"></script>
 </body>
 </html>
