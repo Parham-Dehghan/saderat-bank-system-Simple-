@@ -345,7 +345,7 @@
     <!-- ══ USER MGMT ══ -->
     <div class="page" id="page-user-mgmt">
       <div class="card">
-        <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-person-badge"></i></div><div class="card-title">مدیریت کاربران سیستم</div><button class="btn btn-primary btn-sm" onclick="openMo('mo-user')"><i class="bi bi-plus-lg"></i> کاربر جدید</button></div>
+        <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-person-badge"></i></div><div class="card-title">مدیریت کاربران سیستم</div><button class="btn btn-primary btn-sm" onclick="openNewUser()"><i class="bi bi-plus-lg"></i> کاربر جدید</button></div>
         <div class="card-body tbl-wrap" style="padding:0"><table class="tbl"><thead><tr><th>کاربر</th><th>نقش</th><th>ایمیل</th><th>آخرین ورود</th><th>وضعیت</th><th>عملیات</th></tr></thead><tbody id="user-tbody"></tbody></table></div>
       </div>
 
@@ -460,15 +460,25 @@
 </div></div>
 <!-- User -->
 <div class="mo" id="mo-user"><div class="mo-box">
-  <div class="mo-hd"><span><i class="bi bi-person-badge"></i></span><div class="mo-title">کاربر جدید</div><button class="btn btn-outline btn-sm" onclick="closeMo('mo-user')"><i class="bi bi-x-lg"></i></button></div>
+  <div class="mo-hd"><span><i class="bi bi-person-badge"></i></span><div class="mo-title" id="mo-user-title">کاربر جدید</div><button class="btn btn-outline btn-sm" onclick="closeMo('mo-user')"><i class="bi bi-x-lg"></i></button></div>
   <div class="mo-body"><div class="fgrid fgrid2" style="gap:13px">
+    <input type="hidden" id="nu-id" value="">
     <div class="fg"><label class="fl">نام کاربری</label><input class="fc" id="nu-u" placeholder="username"></div>
     <div class="fg"><label class="fl">نام کامل</label><input class="fc" id="nu-n" placeholder="نام کامل"></div>
     <div class="fg"><label class="fl">ایمیل</label><input class="fc" id="nu-e" placeholder="email@saderat.ir"></div>
-    <div class="fg"><label class="fl">نقش</label><select class="fc" id="nu-r"><option value="operator">اپراتور</option><option value="user">کاربر</option><option value="manager">مدیر شعبه</option><option value="auditor">حسابرس</option><option value="admin">ادمین</option></select></div>
-    <div class="fg" style="grid-column:span 2"><label class="fl">رمز عبور</label><input class="fc" type="password" id="nu-p" placeholder="حداقل ۸ کاراکتر"></div>
-  </div></div>
-  <div class="mo-ft"><button class="btn btn-outline" onclick="closeMo('mo-user')">انصراف</button><button class="btn btn-primary" onclick="addUser()"><i class="bi bi-check-lg"></i> ایجاد</button></div>
+    <div class="fg"><label class="fl">نقش</label><select class="fc" id="nu-r">
+      <option value="user">کاربر بانکی</option>
+      <option value="operator">اپراتور</option>
+      <option value="manager">مدیر شعبه</option>
+      <option value="auditor">حسابرس</option>
+      <option value="admin">ادمین سیستم</option>
+    </select></div>
+    <div class="fg"><label class="fl">وضعیت</label><select class="fc" id="nu-active"><option value="true">فعال</option><option value="false">غیرفعال</option></select></div>
+    <div class="fg"><label class="fl" id="nu-p-lbl">رمز عبور</label><input class="fc" type="password" id="nu-p" placeholder="حداقل ۶ کاراکتر"></div>
+  </div>
+  <div class="alert alert-info" id="nu-hint" style="display:none;margin-top:12px">در حالت ویرایش، اگر رمز را خالی بگذارید تغییر نمی‌کند.</div>
+  </div>
+  <div class="mo-ft"><button class="btn btn-outline" onclick="closeMo('mo-user')">انصراف</button><button class="btn btn-primary" id="nu-save-btn" onclick="saveUser()"><i class="bi bi-check-lg"></i> ذخیره</button></div>
 </div></div>
 
 <!-- Bottom Nav (mobile) -->

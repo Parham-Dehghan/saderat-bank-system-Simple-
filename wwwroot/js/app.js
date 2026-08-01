@@ -645,7 +645,8 @@ async function delAcc(id) {
 
 // ─── CUSTOMERS ──────────────────────────────────
 async function loadCustomers() {
-  let data = await apiCall('/api/users');
+  let data = await apiCall('/api/customers');
+  if (!Array.isArray(data)) data = await apiCall('/api/users');
   if (!Array.isArray(data)) data = getDemoUsers();
   allUsers = data;
   renderCustTable(data);
@@ -789,8 +790,8 @@ async function loadUserMgmt() {
       <td style="font-size:11px">${u.lastLogin||u.LastLogin||'هرگز'}</td>
       <td><span class="badge ${(u.isActive||u.IsActive)?'bg-ok':'bg-no'}">${(u.isActive||u.IsActive)?'آنلاین':'آفلاین'}</span></td>
       <td>
-        <button class="btn btn-outline btn-xs" onclick="showToast('ویرایش: ${u.username||u.Username}')"><i class="bi bi-pencil"></i></button>
-        <button class="btn btn-xs btn-danger" onclick="delUser(${u.id||u.Id})"><i class="bi bi-trash"></i></button>
+        <button class="btn btn-outline btn-xs" onclick="openEditUser(${u.id||u.Id})" title="ویرایش"><i class="bi bi-pencil"></i></button>
+        <button class="btn btn-xs btn-danger" onclick="delUser(${u.id||u.Id})" title="غیرفعال"><i class="bi bi-trash"></i></button>
       </td>
     </tr>`
   ).join('');
@@ -827,22 +828,102 @@ async function loadUserMgmt() {
   ).join('');
 }
 
-async function addUser() {
+function resetUserForm() {
+  document.getElementById('nu-id').value = '';
+  document.getElementById('nu-u').value = '';
+  document.getElementById('nu-u').disabled = false;
+  document.getElementById('nu-n').value = '';
+  document.getElementById('nu-e').value = '';
+  document.getElementById('nu-r').value = 'user';
+  document.getElementById('nu-active').value = 'true';
+  document.getElementById('nu-p').value = '';
+  document.getElementById('nu-p').placeholder = 'حداقل ۶ کاراکتر';
+  document.getElementById('mo-user-title').textContent = 'کاربر جدید';
+  document.getElementById('nu-save-btn').innerHTML = '<i class="bi bi-check-lg"></i> ایجاد';
+  document.getElementById('nu-hint').style.display = 'none';
+  document.getElementById('nu-p-lbl').textContent = 'رمز عبور';
+}
+
+function openNewUser() {
+  resetUserForm();
+  openMo('mo-user');
+}
+
+function openEditUser(id) {
+  const u = (allUsers || []).find(x => (x.id||x.Id) == id);
+  if (!u) { showToast('کاربر یافت نشد', 'err'); return; }
+  document.getElementById('nu-id').value = u.id || u.Id;
+  document.getElementById('nu-u').value = u.username || u.Username || '';
+  document.getElementById('nu-u').disabled = true;
+  document.getElementById('nu-n').value = u.fullName || u.FullName || '';
+  document.getElementById('nu-e').value = u.email || u.Email || '';
+  document.getElementById('nu-r').value = u.role || u.Role || 'user';
+  const active = (u.isActive !== undefined ? u.isActive : u.IsActive);
+  document.getElementById('nu-active').value = active ? 'true' : 'false';
+  document.getElementById('nu-p').value = '';
+  document.getElementById('nu-p').placeholder = 'خالی = بدون تغییر';
+  document.getElementById('mo-user-title').textContent = 'ویرایش کاربر';
+  document.getElementById('nu-save-btn').innerHTML = '<i class="bi bi-check-lg"></i> ذخیره تغییرات';
+  document.getElementById('nu-hint').style.display = 'block';
+  document.getElementById('nu-p-lbl').textContent = 'رمز عبور جدید (اختیاری)';
+  openMo('mo-user');
+}
+
+async function saveUser() {
+  const id = document.getElementById('nu-id')?.value;
   const username = document.getElementById('nu-u')?.value.trim();
   const fullName = document.getElementById('nu-n')?.value.trim();
   const email    = document.getElementById('nu-e')?.value.trim();
   const role     = document.getElementById('nu-r')?.value;
   const password = document.getElementById('nu-p')?.value;
-  if (!username || !fullName) { showToast('اطلاعات را تکمیل کنید','err'); return; }
-  const res = await apiCall('/api/users','POST',{username,fullName,email,role,password});
-  if (res?.success || !res) { showToast('کاربر ایجاد شد','ok'); closeMo('mo-user'); loadUserMgmt(); }
-  else showToast(res.message||'خطا','err');
+  const isActive = document.getElementById('nu-active')?.value === 'true';
+  if (!fullName) { showToast('نام کامل الزامی است', 'err'); return; }
+
+  const btn = document.getElementById('nu-save-btn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="bi bi-hourglass-split"></i> در حال ذخیره...'; }
+
+  let res;
+  if (id) {
+    // UPDATE
+    const body = { fullName, email, role, isActive };
+    if (password) body.password = password;
+    res = await apiCall('/api/users/' + id, 'PUT', body);
+  } else {
+    // CREATE
+    if (!username) { showToast('نام کاربری الزامی است', 'err'); if (btn) { btn.disabled = false; btn.innerHTML = '<i class="bi bi-check-lg"></i> ایجاد'; } return; }
+    res = await apiCall('/api/users', 'POST', { username, fullName, email, role, password });
+  }
+
+  if (btn) { btn.disabled = false; btn.innerHTML = id ? '<i class="bi bi-check-lg"></i> ذخیره تغییرات' : '<i class="bi bi-check-lg"></i> ایجاد'; }
+
+  if (res && res.success) {
+    showToast(id ? 'کاربر به‌روزرسانی شد' : 'کاربر ایجاد شد', 'ok');
+    closeMo('mo-user');
+    resetUserForm();
+    loadUserMgmt();
+  } else if (res && res.message) {
+    showToast(res.message, 'err');
+  } else {
+    // demo fallback
+    showToast(id ? 'کاربر به‌روزرسانی شد (حالت نمایشی)' : 'کاربر ایجاد شد (حالت نمایشی)', 'ok');
+    closeMo('mo-user');
+    if (id) {
+      const u = allUsers.find(x => (x.id||x.Id) == id);
+      if (u) { u.fullName = fullName; u.FullName = fullName; u.email = email; u.role = role; u.Role = role; u.isActive = isActive; }
+      loadUserMgmt();
+    }
+  }
 }
 
+// backward compat
+async function addUser() { return saveUser(); }
+
 async function delUser(id) {
-  if (!confirm('غیرفعال‌سازی کاربر؟')) return;
-  const res = await apiCall(`/api/users/${id}`,'DELETE');
-  if (res?.success || !res) { showToast('کاربر غیرفعال شد'); loadUserMgmt(); }
+  if (!confirm('آیا از غیرفعال‌سازی این کاربر مطمئن هستید؟')) return;
+  const res = await apiCall('/api/users/' + id, 'DELETE');
+  if (res && res.success) { showToast('کاربر غیرفعال شد', 'ok'); loadUserMgmt(); }
+  else if (res && res.message) showToast(res.message, 'err');
+  else { showToast('کاربر غیرفعال شد', 'ok'); loadUserMgmt(); }
 }
 
 // ─── SETTINGS ────────────────────────────────────
@@ -884,21 +965,30 @@ async function doPayment() {
   if (!billId) { showToast('شناسه قبض را وارد کنید', 'err'); return; }
   if (!amount || amount <= 0) { showToast('مبلغ معتبر وارد کنید', 'err'); return; }
   if (!accountId) { showToast('حساب را انتخاب کنید', 'err'); return; }
-  const res = await apiCall('/api/transactions', 'POST', {
-    accountId, type: 'برداشت', amount,
-    description: 'پرداخت قبض ' + billType + ' — ' + billId
-  });
+
+  // find pay button and disable
+  const payBtns = document.querySelectorAll('#page-payments .btn-primary');
+  payBtns.forEach(b => { b.disabled = true; b.innerHTML = '<i class="bi bi-hourglass-split"></i> در حال پرداخت...'; });
+
+  let res = await apiCall('/api/payments', 'POST', { accountId, billType, billId, amount });
+  // fallback to transaction if payments endpoint missing
+  if (!res || (res.success === undefined && !res.message)) {
+    res = await apiCall('/api/transactions', 'POST', {
+      accountId, type: 'برداشت', amount,
+      description: 'پرداخت قبض ' + billType + ' — ' + billId
+    });
+  }
+
+  payBtns.forEach(b => { b.disabled = false; b.innerHTML = '<i class="bi bi-credit-card"></i> پرداخت قبض'; });
+
   if (res && res.success) {
-    showToast('قبض ' + billType + ' به مبلغ ' + fmt(amount) + ' پرداخت شد', 'ok');
+    showToast(res.message || ('قبض ' + billType + ' به مبلغ ' + fmt(amount) + ' پرداخت شد'), 'ok');
     if (idEl) idEl.value = '';
     if (amtEl) amtEl.value = '';
   } else if (res && res.message) {
     showToast(res.message, 'err');
   } else {
-    // demo fallback
-    showToast('قبض ' + billType + ' به مبلغ ' + fmt(amount) + ' پرداخت شد', 'ok');
-    if (idEl) idEl.value = '';
-    if (amtEl) amtEl.value = '';
+    showToast('خطا در ارتباط با سرور — دوباره تلاش کنید', 'err');
   }
 }
 
@@ -977,6 +1067,10 @@ function getDemoAudit() {
 
 // Expose mobile helpers for inline onclick handlers
 window.doPayment = doPayment;
+window.resetUserForm = resetUserForm;
+window.saveUser = saveUser;
+window.openNewUser = openNewUser;
+window.openEditUser = openEditUser;
 window.quickPay = quickPay;
 window.toggleSidebar = toggleSidebar;
 window.closeSidebar = closeSidebar;

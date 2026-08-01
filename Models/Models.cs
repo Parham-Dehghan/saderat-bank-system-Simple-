@@ -7,7 +7,7 @@ public class User
     public string PasswordHash { get; set; } = "";
     public string FullName { get; set; } = "";
     public string Email { get; set; } = "";
-    public string Role { get; set; } = "user"; // admin, manager, operator, user, auditor
+    public string Role { get; set; } = "user";
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? LastLogin { get; set; }
@@ -18,9 +18,9 @@ public class Account
 {
     public int Id { get; set; }
     public string AccountNumber { get; set; } = "";
-    public string AccountType { get; set; } = "جاری"; // جاری, پس‌انداز, کوتاه‌مدت, بلندمدت, قرض‌الحسنه
+    public string AccountType { get; set; } = "جاری";
     public decimal Balance { get; set; } = 0;
-    public string Status { get; set; } = "فعال"; // فعال, مسدود, غیرفعال
+    public string Status { get; set; } = "فعال";
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public int UserId { get; set; }
     public User? User { get; set; }
@@ -31,10 +31,10 @@ public class Transaction
 {
     public int Id { get; set; }
     public string TransactionCode { get; set; } = "";
-    public string Type { get; set; } = ""; // واریز, برداشت, انتقال
+    public string Type { get; set; } = "";
     public decimal Amount { get; set; }
     public string Description { get; set; } = "";
-    public string Status { get; set; } = "موفق"; // موفق, در انتظار, ناموفق
+    public string Status { get; set; } = "موفق";
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public int AccountId { get; set; }
     public Account? Account { get; set; }
@@ -45,11 +45,11 @@ public class Loan
 {
     public int Id { get; set; }
     public string LoanCode { get; set; } = "";
-    public string LoanType { get; set; } = ""; // مسکن, خودرو, ازدواج, کسب‌وکار, تحصیلی, قرض‌الحسنه
+    public string LoanType { get; set; } = "";
     public decimal Amount { get; set; }
     public double InterestRate { get; set; }
     public int Installments { get; set; }
-    public string Status { get; set; } = "در بررسی"; // در بررسی, جاری, تسویه
+    public string Status { get; set; } = "در بررسی";
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public int UserId { get; set; }
     public User? User { get; set; }
@@ -59,10 +59,10 @@ public class BankCard
 {
     public int Id { get; set; }
     public string CardNumber { get; set; } = "";
-    public string CardType { get; set; } = "نقدی"; // نقدی, اعتباری, مجازی
+    public string CardType { get; set; } = "نقدی";
     public decimal DailyLimit { get; set; } = 5000000;
     public string ExpiryDate { get; set; } = "";
-    public string Status { get; set; } = "فعال"; // فعال, مسدود
+    public string Status { get; set; } = "فعال";
     public int AccountId { get; set; }
     public Account? Account { get; set; }
 }

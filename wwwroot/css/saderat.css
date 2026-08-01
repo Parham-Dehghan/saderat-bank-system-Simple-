@@ -539,3 +539,71 @@ body.dark .tb-icon-btn { color: #c0c0e0; }
   .grid-3, .pay-quick-grid { grid-template-columns: 1fr 1fr !important; }
   .grid-5 { grid-template-columns: 1fr !important; }
 }
+
+/* ═══ EXTRA RESPONSIVE HARDENING ═══ */
+html { -webkit-text-size-adjust: 100%; }
+img { max-width: 100%; height: auto; }
+button, .btn, .nav-item, .qa-btn, .bn-item, .role-tab {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.btn, .fc, .fi, .si { min-height: 40px; }
+.btn-xs { min-height: 28px; }
+
+/* tables: ensure readable on narrow screens */
+.tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+.tbl { min-width: 480px; }
+
+/* modal full-screen feel on small phones */
+@media (max-width: 600px) {
+  .mo-box {
+    width: 100% !important;
+    max-width: 100vw !important;
+    border-radius: 16px 16px 0 0 !important;
+    max-height: 94vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .mo-body { overflow-y: auto; flex: 1; }
+  .mo-ft { flex-shrink: 0; }
+  .fgrid2 { grid-template-columns: 1fr !important; }
+  .fgrid2 .fg[style*="span"] { grid-column: span 1 !important; }
+  #topbar { gap: 8px; }
+  .tb-actions { gap: 4px; }
+  .tb-icon-btn { width: 34px; height: 34px; font-size: 15px; }
+  .uav { width: 30px; height: 30px; font-size: 12px; }
+  .card { margin-bottom: 12px; }
+  .card-hd { padding: 10px 12px; }
+  .card-body { padding: 12px; }
+  .alert { font-size: 12px; padding: 10px 12px; }
+  #notif-panel { left: 8px; right: 8px; width: auto; top: 52px; }
+  .profile-card { padding: 14px; }
+  .prof-av { width: 48px; height: 48px; font-size: 20px; }
+  .ps-val { font-size: 16px; }
+  /* role cards / matrices */
+  .grid-5 { grid-template-columns: 1fr !important; }
+  /* hide less critical topbar bits */
+  .tb-title { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40vw; }
+}
+
+@media (max-width: 360px) {
+  .stats-grid { grid-template-columns: 1fr !important; }
+  .pay-quick-grid, .grid-3 { grid-template-columns: 1fr !important; }
+  .bn-item span { display: none; }
+  .bn-item { min-width: 44px; }
+}
+
+/* landscape phones keep usable content */
+@media (max-height: 420px) and (orientation: landscape) {
+  #sidebar { width: 220px; }
+  #content { padding: 8px; padding-bottom: 8px; }
+  .stats-grid { grid-template-columns: repeat(4, 1fr) !important; }
+  #bottom-nav, #fab { display: none !important; }
+}
+
+/* print */
+@media print {
+  #sidebar, #topbar, #bottom-nav, #fab, #toast, #notif-panel, .sb-overlay { display: none !important; }
+  #main { margin: 0 !important; }
+  .card { break-inside: avoid; box-shadow: none; }
+}
