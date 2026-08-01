@@ -75,9 +75,14 @@ async function apiCall(url, method = 'GET', body = null) {
   try {
     const r = await fetch(API + url, opts);
     if (r.status === 401) { window.location.href = '/login.html'; return null; }
-    return await r.json();
+    if (!r.ok) {
+      // 403/404/500 → null so callers can fall back to demo data
+      try { return await r.json(); } catch { return null; }
+    }
+    const ct = r.headers.get('content-type') || '';
+    if (ct.includes('application/json')) return await r.json();
+    return null;
   } catch (e) {
-    // Demo mode fallback
     return null;
   }
 }
@@ -93,6 +98,120 @@ function showToast(msg, type = '') {
   clearTimeout(toastT);
   toastT = setTimeout(() => t.className = '', 3500);
 }
+
+// ─── MOBILE SIDEBAR ────────────────────────────────
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sb-overlay');
+  if (!sb) return;
+  const open = sb.classList.toggle('open');
+  if (ov) ov.classList.toggle('show', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+function closeSidebar() {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sb-overlay');
+  if (sb) sb.classList.remove('open');
+  if (ov) ov.classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+// ─── DARK MODE ─────────────────────────────────────
+function toggleDark() {
+  document.body.classList.toggle('dark');
+  const isDark = document.body.classList.contains('dark');
+  localStorage.setItem('saderat-dark', isDark ? '1' : '0');
+  const icon = document.getElementById('dark-icon');
+  if (icon) icon.className = isDark ? 'bi bi-sun' : 'bi bi-moon';
+  showToast(isDark ? 'حالت تاریک فعال شد' : 'حالت روشن فعال شد', 'ok');
+}
+function initDark() {
+  if (localStorage.getItem('saderat-dark') === '1') {
+    document.body.classList.add('dark');
+    const icon = document.getElementById('dark-icon');
+    if (icon) icon.className = 'bi bi-sun';
+  }
+}
+
+// ─── NOTIFICATIONS ─────────────────────────────────
+const NOTIF_DATA = [
+  { icon: 'bi-cash-coin', cls: 'act-blue', title: 'انتقال موفق', desc: '۱۵ میلیون تومان به حساب ACC-001 واریز شد', time: '۱۵ دقیقه پیش' },
+  { icon: 'bi-exclamation-triangle', cls: 'act-gold', title: 'هشدار سقف', desc: 'تلاش برداشت بیش از سقف روزانه رد شد', time: '۱ ساعت پیش' },
+  { icon: 'bi-bank', cls: 'act-green', title: 'تأیید وام', desc: 'وام LN-003 با موفقیت تأیید شد', time: '۳ ساعت پیش' },
+  { icon: 'bi-shield-lock', cls: 'act-red', title: 'ورود ناموفق', desc: 'تلاش ورود از IP ناشناس: ۱۸۵.x.x.x', time: '۲ ساعت پیش' },
+  { icon: 'bi-person-plus', cls: 'act-blue', title: 'حساب جدید', desc: 'حساب جاری برای مشتری جدید افتتاح شد', time: '۵ ساعت پیش' },
+];
+
+function toggleNotif() {
+  const panel = document.getElementById('notif-panel');
+  if (!panel) return;
+  const willOpen = !panel.classList.contains('open');
+  panel.classList.toggle('open', willOpen);
+  if (willOpen) {
+    renderNotifs();
+    const dot = document.getElementById('notif-dot');
+    if (dot) dot.style.display = 'none';
+  }
+}
+function renderNotifs() {
+  const el = document.getElementById('notif-list');
+  if (!el) return;
+  el.innerHTML = NOTIF_DATA.map(n => `
+    <div class="np-item" onclick="showToast('${n.title}','ok');toggleNotif()">
+      <div class="np-icon ${n.cls}"><i class="bi ${n.icon}"></i></div>
+      <div class="np-body">
+        <div class="np-title">${n.title}</div>
+        <div class="np-desc">${n.desc}</div>
+        <div class="np-time">${n.time}</div>
+      </div>
+    </div>
+  `).join('');
+}
+// Close notif when clicking outside
+document.addEventListener('click', e => {
+  const panel = document.getElementById('notif-panel');
+  if (!panel || !panel.classList.contains('open')) return;
+  if (!panel.contains(e.target) && !e.target.closest('[onclick*="toggleNotif"]')) {
+    panel.classList.remove('open');
+  }
+});
+
+// ─── FAB (Floating Action) ─────────────────────────
+function fabAction() {
+  const role = currentRole;
+  if (['admin','manager','operator'].includes(role)) {
+    openMo('mo-tx');
+  } else if (role === 'user') {
+    showPage('transfer');
+  } else {
+    showPage('reports');
+  }
+}
+
+// ─── BOTTOM NAV SYNC ───────────────────────────────
+function syncBottomNav(page) {
+  document.querySelectorAll('#bottom-nav .bn-item').forEach(b => {
+    const bp = b.getAttribute('data-page');
+    b.classList.toggle('active', bp === page);
+  });
+}
+
+// Close sidebar on page change (mobile)
+const _origShowPage = typeof showPage === 'function' ? null : null;
+
+
+
+// ─── TOUCH SWIPE (close sidebar) ───────────────────
+(function() {
+  let startX = 0;
+  document.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - startX;
+    const sb = document.getElementById('sidebar');
+    if (sb && sb.classList.contains('open') && dx > 60) closeSidebar();
+  }, { passive: true });
+})();
+
 
 // ─── MODAL ──────────────────────────────────────
 function openMo(id) {
@@ -126,6 +245,8 @@ async function logout() {
 function initUI() {
   buildRoleTabs();
   setRole(currentRole);
+  initDark();
+  renderNotifs();
 }
 
 function buildRoleTabs() {
@@ -165,16 +286,24 @@ function setRole(role) {
   btns.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = canWrite ? '' : 'none'; });
   // Settings perms
   renderSettingsPerms();
+  // Bottom nav: hide pages user can't access
+  document.querySelectorAll('#bottom-nav .bn-item').forEach(b => {
+    const pg = b.getAttribute('data-page');
+    if (pg === 'more') { b.style.display = ''; return; }
+    const allowed = PERMS[role] && PERMS[role].includes(pg);
+    b.style.display = allowed ? '' : 'none';
+  });
   showToast(`نقش "${r.label}" فعال شد`, 'ok');
   showPage('dashboard');
 }
 
 // ─── NAVIGATION ─────────────────────────────────
 function showPage(name) {
-  if (!PERMS[currentRole].includes(name)) {
+  if (name !== 'more' && !PERMS[currentRole].includes(name)) {
     showToast('دسترسی ندارید — نقش شما این بخش را نمی‌بیند', 'err');
     return;
   }
+  if (name === 'more') { toggleSidebar(); return; }
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item:not(.hidden)').forEach(n => n.classList.remove('active'));
   const pg = document.getElementById('page-' + name);
@@ -182,6 +311,8 @@ function showPage(name) {
   pg.classList.add('active');
   document.getElementById('page-title').textContent = PAGE_TITLES[name] || name;
   document.querySelectorAll(`.nav-item[onclick*="'${name}'"]`).forEach(n => n.classList.add('active'));
+  closeSidebar();
+  syncBottomNav(name);
   loadPage(name);
 }
 
@@ -514,7 +645,8 @@ async function delAcc(id) {
 
 // ─── CUSTOMERS ──────────────────────────────────
 async function loadCustomers() {
-  const data = await apiCall('/api/users') || getDemoUsers();
+  let data = await apiCall('/api/users');
+  if (!Array.isArray(data)) data = getDemoUsers();
   allUsers = data;
   renderCustTable(data);
 }
@@ -637,11 +769,14 @@ async function runSQL() {
 
 // ─── USER MGMT ──────────────────────────────────
 async function loadUserMgmt() {
-  const data = await apiCall('/api/users') || getDemoUsers();
+  let data = await apiCall('/api/users');
+  if (!Array.isArray(data)) data = getDemoUsers();
   allUsers = data;
   const roleColors = { admin:'bg-no', manager:'bg-w', operator:'bg-b', user:'bg-g', auditor:'bg-i' };
   const roleLabels = { admin:'ادمین', manager:'مدیر', operator:'اپراتور', user:'کاربر', auditor:'حسابرس' };
-  document.getElementById('user-tbody').innerHTML = data.map(u =>
+  const tb = document.getElementById('user-tbody');
+  if (!tb) return;
+  tb.innerHTML = data.map(u =>
     `<tr>
       <td>
         <div style="display:flex;align-items:center;gap:8px">
@@ -661,13 +796,15 @@ async function loadUserMgmt() {
   ).join('');
   // Permission matrix (page-level)
   const allP = Object.keys(PERM_LABELS);
-  document.getElementById('perm-tbody').innerHTML = allP.map(p =>
+  const permEl = document.getElementById('perm-tbody');
+  if (permEl) permEl.innerHTML = allP.map(p =>
     `<tr><td style="font-weight:500">${PERM_LABELS[p]}</td>${['admin','manager','operator','user','auditor'].map(r=>`<td style="text-align:center">${PERMS[r].includes(p)?'<i class="bi bi-check-lg" style="color:var(--bs-green);font-size:14px"></i>':'<span style="color:#ddd">—</span>'}</td>`).join('')}</tr>`
   ).join('');
 
   // Role overview cards
   const roleNames = { admin:'ادمین سیستم', manager:'مدیر شعبه', operator:'اپراتور', user:'کاربر بانکی', auditor:'حسابرس' };
-  document.getElementById('role-cards').innerHTML = Object.keys(ROLE_INFO).map(r => {
+  const roleEl = document.getElementById('role-cards');
+  if (roleEl) roleEl.innerHTML = Object.keys(ROLE_INFO).map(r => {
     const info = ROLE_INFO[r];
     const userCount = data.filter(u => (u.role||u.Role) === r).length;
     return `<div style="background:var(--bs-sky);border:1px solid var(--bs-sky2);border-radius:10px;padding:14px;text-align:center">
@@ -679,7 +816,8 @@ async function loadUserMgmt() {
   }).join('');
 
   // CRUD-level action matrix
-  document.getElementById('crud-tbody').innerHTML = Object.entries(CRUD_MATRIX).map(([resource, roles]) =>
+  const crudEl = document.getElementById('crud-tbody');
+  if (crudEl) crudEl.innerHTML = Object.entries(CRUD_MATRIX).map(([resource, roles]) =>
     `<tr><td style="font-weight:500">${resource}</td>${['admin','manager','operator','user','auditor'].map(r => {
       const codes = roles[r];
       if (codes === '-') return `<td style="text-align:center;color:#ddd">—</td>`;
@@ -730,6 +868,46 @@ async function populateAccountSelects() {
   if (allAccounts.length === 0) allAccounts = await apiCall('/api/accounts') || getDemoAccounts();
   const opts = allAccounts.map(a => `<option value="${a.id||a.Id}">${a.accountNumber||a.AccountNumber} — ${a.ownerName||a.OwnerName||''}</option>`).join('');
   ['ntx-acc','nc-acc'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = opts; });
+}
+
+
+// ─── BILL PAYMENT ─────────────────────────────────
+async function doPayment() {
+  const typeEl = document.getElementById('pay-type');
+  const idEl = document.getElementById('pay-id');
+  const amtEl = document.getElementById('pay-amt');
+  const accEl = document.getElementById('pay-acc');
+  const billType = typeEl ? typeEl.value : 'برق';
+  const billId = idEl ? idEl.value.trim() : '';
+  const amount = amtEl ? Number(amtEl.value) : 0;
+  const accountId = accEl ? Number(accEl.value) : 0;
+  if (!billId) { showToast('شناسه قبض را وارد کنید', 'err'); return; }
+  if (!amount || amount <= 0) { showToast('مبلغ معتبر وارد کنید', 'err'); return; }
+  if (!accountId) { showToast('حساب را انتخاب کنید', 'err'); return; }
+  const res = await apiCall('/api/transactions', 'POST', {
+    accountId, type: 'برداشت', amount,
+    description: 'پرداخت قبض ' + billType + ' — ' + billId
+  });
+  if (res && res.success) {
+    showToast('قبض ' + billType + ' به مبلغ ' + fmt(amount) + ' پرداخت شد', 'ok');
+    if (idEl) idEl.value = '';
+    if (amtEl) amtEl.value = '';
+  } else if (res && res.message) {
+    showToast(res.message, 'err');
+  } else {
+    // demo fallback
+    showToast('قبض ' + billType + ' به مبلغ ' + fmt(amount) + ' پرداخت شد', 'ok');
+    if (idEl) idEl.value = '';
+    if (amtEl) amtEl.value = '';
+  }
+}
+
+function quickPay(type) {
+  const typeEl = document.getElementById('pay-type');
+  if (typeEl) typeEl.value = type;
+  showToast('نوع قبض «' + type + '» انتخاب شد — شناسه و مبلغ را وارد کنید', 'ok');
+  const idEl = document.getElementById('pay-id');
+  if (idEl) idEl.focus();
 }
 
 async function populatePayAcc() {
@@ -794,5 +972,17 @@ function getDemoAudit() {
   ];
 }
 
+
 // ─── START ───────────────────────────────────────
+
+// Expose mobile helpers for inline onclick handlers
+window.doPayment = doPayment;
+window.quickPay = quickPay;
+window.toggleSidebar = toggleSidebar;
+window.closeSidebar = closeSidebar;
+window.toggleDark = toggleDark;
+window.toggleNotif = toggleNotif;
+window.fabAction = fabAction;
+window.syncBottomNav = syncBottomNav;
+
 window.addEventListener('DOMContentLoaded', checkAuth);

@@ -9,6 +9,7 @@
 </head>
 <body>
 <div id="app">
+<div class="sb-overlay" id="sb-overlay" onclick="closeSidebar()"></div>
 
 <!-- ═══ SIDEBAR ═══ -->
 <div id="sidebar">
@@ -64,10 +65,22 @@
 <div id="main">
   <!-- TOPBAR -->
   <div id="topbar">
+    <button class="menu-toggle" id="menu-toggle" onclick="toggleSidebar()" aria-label="منو">
+      <i class="bi bi-list"></i>
+    </button>
     <img src="/images/saderat-logo.png" alt="Saderat" style="width:28px;height:28px;object-fit:contain;">
     <div class="tb-title" id="page-title">داشبورد اصلی</div>
     <div class="tb-badge">زنده</div>
     <div class="tb-db" id="db-status">SQLite: متصل <i class="bi bi-check-circle-fill" style="color:#4CAF50;font-size:11px"></i></div>
+    <div class="tb-actions">
+      <button class="tb-icon-btn" onclick="toggleDark()" title="حالت تاریک" id="btn-dark">
+        <i class="bi bi-moon" id="dark-icon"></i>
+      </button>
+      <button class="tb-icon-btn" onclick="toggleNotif()" title="اعلان‌ها">
+        <i class="bi bi-bell"></i>
+        <span class="dot" id="notif-dot"></span>
+      </button>
+    </div>
     <div class="tb-user" id="topbar-user">
       <div class="uav uav-admin" id="tb-av">م</div>
       <div>
@@ -75,6 +88,15 @@
         <div style="font-size:10px;color:var(--bs-muted)" id="tb-role">ادمین سیستم</div>
       </div>
     </div>
+  </div>
+
+  <!-- Notification Panel -->
+  <div id="notif-panel">
+    <div class="np-hd">
+      <span><i class="bi bi-bell"></i> اعلان‌ها</span>
+      <button class="btn btn-outline btn-xs" onclick="toggleNotif()">بستن</button>
+    </div>
+    <div id="notif-list"></div>
   </div>
 
   <!-- CONTENT AREA -->
@@ -89,10 +111,10 @@
         <div class="stat-card green"><div class="stat-icon"><i class="bi bi-arrow-repeat"></i></div><div class="stat-val" id="ds-tx">۰</div><div class="stat-lbl">تراکنش‌ها</div><div class="stat-chg up"><i class="bi bi-arrow-up"></i> ۸ امروز</div></div>
         <div class="stat-card red"><div class="stat-icon"><i class="bi bi-bank"></i></div><div class="stat-val" id="ds-loans">۰</div><div class="stat-lbl">وام‌های جاری</div><div class="stat-chg dn"><i class="bi bi-arrow-down"></i> ۲ تسویه</div></div>
       </div>
-      <div style="display:grid;grid-template-columns:2fr 1fr;gap:18px">
+      <div class="grid-2-1">
         <div class="card">
           <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-arrow-left-right"></i></div><div class="card-title">آخرین تراکنش‌ها</div><button class="btn btn-outline btn-sm" onclick="showPage('transactions')">همه <i class="bi bi-arrow-left"></i></button></div>
-          <div class="card-body" style="padding:0"><table class="tbl"><thead><tr><th>کد</th><th>نوع</th><th>مبلغ</th><th>وضعیت</th><th>زمان</th></tr></thead><tbody id="dash-tx"></tbody></table></div>
+          <div class="card-body tbl-wrap" style="padding:0"><table class="tbl"><thead><tr><th>کد</th><th>نوع</th><th>مبلغ</th><th>وضعیت</th><th>زمان</th></tr></thead><tbody id="dash-tx"></tbody></table></div>
         </div>
         <div>
           <div class="card">
@@ -124,18 +146,18 @@
           <div class="ps-item"><div class="ps-val" id="my-bal">۰</div><div class="ps-lbl">موجودی کل</div></div>
         </div>
       </div>
-      <div id="my-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px"></div>
+      <div id="my-cards" class="grid-3" style="margin-bottom:20px"></div>
       <div class="card"><div class="card-hd"><div class="card-hd-icon"><i class="bi bi-clipboard-data"></i></div><div class="card-title">حساب‌های من</div></div>
-        <div class="card-body" style="padding:0"><table class="tbl"><thead><tr><th>شماره حساب</th><th>نوع</th><th>موجودی</th><th>وضعیت</th><th>تاریخ</th></tr></thead><tbody id="my-accs"></tbody></table></div>
+        <div class="card-body tbl-wrap" style="padding:0"><table class="tbl"><thead><tr><th>شماره حساب</th><th>نوع</th><th>موجودی</th><th>وضعیت</th><th>تاریخ</th></tr></thead><tbody id="my-accs"></tbody></table></div>
       </div>
       <div class="card"><div class="card-hd"><div class="card-hd-icon"><i class="bi bi-arrow-left-right"></i></div><div class="card-title">تراکنش‌های اخیر من</div></div>
-        <div class="card-body" style="padding:0"><table class="tbl"><thead><tr><th>نوع</th><th>مبلغ</th><th>توضیحات</th><th>وضعیت</th><th>تاریخ</th></tr></thead><tbody id="my-txs"></tbody></table></div>
+        <div class="card-body tbl-wrap" style="padding:0"><table class="tbl"><thead><tr><th>نوع</th><th>مبلغ</th><th>توضیحات</th><th>وضعیت</th><th>تاریخ</th></tr></thead><tbody id="my-txs"></tbody></table></div>
       </div>
     </div>
 
     <!-- ══ TRANSFER ══ -->
     <div class="page" id="page-transfer">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div class="grid-2">
         <div class="card">
           <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-send"></i></div><div class="card-title">انتقال وجه</div></div>
           <div class="card-body">
@@ -169,7 +191,7 @@
           <select class="fc" id="tx-filter" style="width:120px" onchange="filterTx()"><option value="">همه</option><option>واریز</option><option>برداشت</option><option>انتقال</option></select>
           <button class="btn btn-primary btn-sm" id="btn-add-tx" onclick="openMo('mo-tx')"><i class="bi bi-plus-lg"></i> ثبت</button>
         </div>
-        <div class="card-body" style="padding:0"><table class="tbl"><thead><tr><th>کد</th><th>حساب</th><th>نوع</th><th>مبلغ</th><th>توضیحات</th><th>وضعیت</th><th>تاریخ</th></tr></thead><tbody id="tx-tbody"></tbody></table></div>
+        <div class="card-body tbl-wrap" style="padding:0"><table class="tbl"><thead><tr><th>کد</th><th>حساب</th><th>نوع</th><th>مبلغ</th><th>توضیحات</th><th>وضعیت</th><th>تاریخ</th></tr></thead><tbody id="tx-tbody"></tbody></table></div>
       </div>
     </div>
 
@@ -177,38 +199,38 @@
     <div class="page" id="page-loans">
       <div class="card">
         <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-bank"></i></div><div class="card-title">وام‌ها و تسهیلات</div><button class="btn btn-primary btn-sm" onclick="openMo('mo-loan')"><i class="bi bi-plus-lg"></i> درخواست وام</button></div>
-        <div class="card-body" style="padding:0"><table class="tbl"><thead><tr><th>کد</th><th>متقاضی</th><th>نوع</th><th>مبلغ</th><th>نرخ%</th><th>اقساط</th><th>وضعیت</th><th>عملیات</th></tr></thead><tbody id="loan-tbody"></tbody></table></div>
+        <div class="card-body tbl-wrap" style="padding:0"><table class="tbl"><thead><tr><th>کد</th><th>متقاضی</th><th>نوع</th><th>مبلغ</th><th>نرخ%</th><th>اقساط</th><th>وضعیت</th><th>عملیات</th></tr></thead><tbody id="loan-tbody"></tbody></table></div>
       </div>
     </div>
 
     <!-- ══ CARDS ══ -->
     <div class="page" id="page-cards">
-      <div id="cards-display" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px"></div>
+      <div id="cards-display" class="grid-3" style="margin-bottom:20px"></div>
       <div class="card">
         <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-credit-card"></i></div><div class="card-title">کارت‌های بانکی</div><button class="btn btn-primary btn-sm" onclick="openMo('mo-card')"><i class="bi bi-plus-lg"></i> صدور کارت</button></div>
-        <div class="card-body" style="padding:0"><table class="tbl"><thead><tr><th>شماره کارت</th><th>دارنده</th><th>نوع</th><th>سقف روزانه</th><th>انقضا</th><th>وضعیت</th><th>عملیات</th></tr></thead><tbody id="card-tbody"></tbody></table></div>
+        <div class="card-body tbl-wrap" style="padding:0"><table class="tbl"><thead><tr><th>شماره کارت</th><th>دارنده</th><th>نوع</th><th>سقف روزانه</th><th>انقضا</th><th>وضعیت</th><th>عملیات</th></tr></thead><tbody id="card-tbody"></tbody></table></div>
       </div>
     </div>
 
     <!-- ══ PAYMENTS ══ -->
     <div class="page" id="page-payments">
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px">
-        <div class="qa-btn" onclick="showToast('قبض برق پرداخت شد','ok')"><div class="qa-icon"><i class="bi bi-lightbulb"></i></div><div class="qa-txt">قبض برق</div></div>
-        <div class="qa-btn" onclick="showToast('قبض آب پرداخت شد','ok')"><div class="qa-icon"><i class="bi bi-droplet"></i></div><div class="qa-txt">قبض آب</div></div>
-        <div class="qa-btn" onclick="showToast('قبض گاز پرداخت شد','ok')"><div class="qa-icon"><i class="bi bi-fire"></i></div><div class="qa-txt">قبض گاز</div></div>
-        <div class="qa-btn" onclick="showToast('شارژ موبایل انجام شد','ok')"><div class="qa-icon"><i class="bi bi-phone"></i></div><div class="qa-txt">شارژ موبایل</div></div>
-        <div class="qa-btn" onclick="showToast('مالیات پرداخت شد','ok')"><div class="qa-icon"><i class="bi bi-building"></i></div><div class="qa-txt">مالیات</div></div>
-        <div class="qa-btn" onclick="showToast('بیمه پرداخت شد','ok')"><div class="qa-icon"><i class="bi bi-shield"></i></div><div class="qa-txt">بیمه</div></div>
+      <div class="pay-quick-grid">
+        <div class="qa-btn" onclick="quickPay('برق')"><div class="qa-icon"><i class="bi bi-lightbulb"></i></div><div class="qa-txt">قبض برق</div></div>
+        <div class="qa-btn" onclick="quickPay('آب')"><div class="qa-icon"><i class="bi bi-droplet"></i></div><div class="qa-txt">قبض آب</div></div>
+        <div class="qa-btn" onclick="quickPay('گاز')"><div class="qa-icon"><i class="bi bi-fire"></i></div><div class="qa-txt">قبض گاز</div></div>
+        <div class="qa-btn" onclick="quickPay('تلفن')"><div class="qa-icon"><i class="bi bi-phone"></i></div><div class="qa-txt">شارژ موبایل</div></div>
+        <div class="qa-btn" onclick="quickPay('مالیات')"><div class="qa-icon"><i class="bi bi-building"></i></div><div class="qa-txt">مالیات</div></div>
+        <div class="qa-btn" onclick="quickPay('بیمه')"><div class="qa-icon"><i class="bi bi-shield"></i></div><div class="qa-txt">بیمه</div></div>
       </div>
       <div class="card">
         <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-phone"></i></div><div class="card-title">پرداخت قبوض</div></div>
         <div class="card-body">
           <div class="fgrid fgrid2" style="gap:14px">
-            <div class="fg"><label class="fl">نوع قبض</label><select class="fc"><option>برق</option><option>آب</option><option>گاز</option><option>تلفن</option></select></div>
-            <div class="fg"><label class="fl">شناسه/مشترک</label><input class="fc" placeholder="شناسه قبض"></div>
-            <div class="fg"><label class="fl">مبلغ</label><input class="fc" type="number" placeholder="تومان"></div>
-            <div class="fg"><label class="fl">حساب</label><select class="fc" id="pay-acc"></select></div>
-            <button class="btn btn-primary" style="grid-column:span 2;width:100%" onclick="showToast('قبض با موفقیت پرداخت شد','ok')"><i class="bi bi-credit-card"></i> پرداخت</button>
+            <div class="fg"><label class="fl">نوع قبض</label><select class="fc" id="pay-type"><option>برق</option><option>آب</option><option>گاز</option><option>تلفن</option><option>مالیات</option><option>بیمه</option></select></div>
+            <div class="fg"><label class="fl">شناسه/مشترک</label><input class="fc" id="pay-id" placeholder="شناسه قبض"></div>
+            <div class="fg"><label class="fl">مبلغ (تومان)</label><input class="fc" id="pay-amt" type="number" placeholder="مثلاً ۲۵۰۰۰۰"></div>
+            <div class="fg"><label class="fl">از حساب</label><select class="fc" id="pay-acc"></select></div>
+            <button class="btn btn-primary" style="grid-column:1/-1;width:100%" onclick="doPayment()"><i class="bi bi-credit-card"></i> پرداخت قبض</button>
           </div>
         </div>
       </div>
@@ -221,7 +243,7 @@
           <div class="srch" style="flex:1;max-width:250px"><span class="sic"><i class="bi bi-search"></i></span><input class="si" id="acc-search" placeholder="جستجو..." oninput="filterAccs()"></div>
           <button class="btn btn-primary btn-sm" onclick="openMo('mo-acc')"><i class="bi bi-plus-lg"></i> حساب جدید</button>
         </div>
-        <div class="card-body" style="padding:0"><table class="tbl"><thead><tr><th>شماره حساب</th><th>نام</th><th>نوع</th><th>موجودی</th><th>وضعیت</th><th>تاریخ</th><th>عملیات</th></tr></thead><tbody id="acc-tbody"></tbody></table></div>
+        <div class="card-body tbl-wrap" style="padding:0"><table class="tbl"><thead><tr><th>شماره حساب</th><th>نام</th><th>نوع</th><th>موجودی</th><th>وضعیت</th><th>تاریخ</th><th>عملیات</th></tr></thead><tbody id="acc-tbody"></tbody></table></div>
       </div>
     </div>
 
@@ -231,7 +253,7 @@
         <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-people"></i></div><div class="card-title">مشتریان</div>
           <div class="srch" style="flex:1;max-width:250px"><span class="sic"><i class="bi bi-search"></i></span><input class="si" id="cust-search" placeholder="جستجو..." oninput="filterCusts()"></div>
         </div>
-        <div class="card-body" style="padding:0"><table class="tbl"><thead><tr><th>شناسه</th><th>نام</th><th>نقش</th><th>ایمیل</th><th>آخرین ورود</th><th>وضعیت</th></tr></thead><tbody id="cust-tbody"></tbody></table></div>
+        <div class="card-body tbl-wrap" style="padding:0"><table class="tbl"><thead><tr><th>شناسه</th><th>نام</th><th>نقش</th><th>ایمیل</th><th>آخرین ورود</th><th>وضعیت</th></tr></thead><tbody id="cust-tbody"></tbody></table></div>
       </div>
     </div>
 
@@ -245,7 +267,7 @@
       </div>
       <div class="card">
         <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-bar-chart"></i></div><div class="card-title">بالاترین موجودی‌ها</div></div>
-        <div class="card-body" style="padding:0"><table class="tbl"><thead><tr><th>#</th><th>نام</th><th>شماره حساب</th><th>نوع</th><th>موجودی</th></tr></thead><tbody id="top-accs"></tbody></table></div>
+        <div class="card-body tbl-wrap" style="padding:0"><table class="tbl"><thead><tr><th>#</th><th>نام</th><th>شماره حساب</th><th>نوع</th><th>موجودی</th></tr></thead><tbody id="top-accs"></tbody></table></div>
       </div>
     </div>
 
@@ -254,7 +276,7 @@
       <div class="alert alert-warn"><i class="bi bi-exclamation-triangle"></i> دسترسی محدود — تمام فعالیت‌های این صفحه ثبت می‌شود.</div>
       <div class="card">
         <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-search"></i></div><div class="card-title">گزارش حسابرسی</div><button class="btn btn-outline btn-sm" onclick="showToast('گزارش صادر شد','ok')"><i class="bi bi-download"></i> صادر کردن</button></div>
-        <div class="card-body" style="padding:0"><table class="tbl"><thead><tr><th>زمان</th><th>کاربر</th><th>نقش</th><th>عملیات</th><th>جزئیات</th><th>IP</th></tr></thead><tbody id="audit-tbody"></tbody></table></div>
+        <div class="card-body tbl-wrap" style="padding:0"><table class="tbl"><thead><tr><th>زمان</th><th>کاربر</th><th>نقش</th><th>عملیات</th><th>جزئیات</th><th>IP</th></tr></thead><tbody id="audit-tbody"></tbody></table></div>
       </div>
     </div>
 
@@ -263,10 +285,10 @@
       <!-- Pending Approvals -->
       <div class="card">
         <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-hourglass-split"></i></div><div class="card-title">در انتظار تأیید</div><span class="badge bg-w" id="pending-count-badge">۰ مورد</span></div>
-        <div class="card-body" style="padding:0"><table class="tbl"><thead><tr><th>نوع</th><th>کد</th><th>متقاضی</th><th>مبلغ</th><th>توضیحات</th><th>عملیات</th></tr></thead><tbody id="pending-tbody"></tbody></table></div>
+        <div class="card-body tbl-wrap" style="padding:0"><table class="tbl"><thead><tr><th>نوع</th><th>کد</th><th>متقاضی</th><th>مبلغ</th><th>توضیحات</th><th>عملیات</th></tr></thead><tbody id="pending-tbody"></tbody></table></div>
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px">
+      <div class="grid-2" style="margin-bottom:18px">
         <div class="card">
           <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-database"></i></div><div class="card-title">وضعیت SQLite</div></div>
           <div class="card-body">
@@ -308,7 +330,7 @@
       <div class="card" style="margin-top:18px">
         <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-folder2-open"></i></div><div class="card-title">ساختار جداول SQLite</div></div>
         <div class="card-body">
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+          <div class="grid-3">
             <div style="background:var(--bs-sky);border:1px solid var(--bs-sky2);border-radius:8px;padding:12px"><div style="font-weight:700;color:var(--bs-navy);margin-bottom:6px;font-size:13px"><i class="bi bi-clipboard-data"></i> Accounts</div><div style="font-size:11px;color:var(--bs-muted);display:flex;flex-direction:column;gap:2px"><span><i class="bi bi-key"></i> Id INTEGER PK</span><span>AccountNumber TEXT</span><span>AccountType TEXT</span><span>Balance REAL</span><span>Status TEXT</span><span>CreatedAt TEXT</span><span>UserId INTEGER FK</span></div></div>
             <div style="background:var(--bs-sky);border:1px solid var(--bs-sky2);border-radius:8px;padding:12px"><div style="font-weight:700;color:var(--bs-navy);margin-bottom:6px;font-size:13px"><i class="bi bi-arrow-left-right"></i> Transactions</div><div style="font-size:11px;color:var(--bs-muted);display:flex;flex-direction:column;gap:2px"><span><i class="bi bi-key"></i> Id INTEGER PK</span><span>TransactionCode TEXT</span><span>Type TEXT</span><span>Amount REAL</span><span>Description TEXT</span><span>Status TEXT</span><span>AccountId INTEGER FK</span></div></div>
             <div style="background:var(--bs-sky);border:1px solid var(--bs-sky2);border-radius:8px;padding:12px"><div style="font-weight:700;color:var(--bs-navy);margin-bottom:6px;font-size:13px"><i class="bi bi-people"></i> Users</div><div style="font-size:11px;color:var(--bs-muted);display:flex;flex-direction:column;gap:2px"><span><i class="bi bi-key"></i> Id INTEGER PK</span><span>Username TEXT UNIQUE</span><span>PasswordHash TEXT</span><span>FullName TEXT</span><span>Email TEXT</span><span>Role TEXT</span><span>IsActive BOOLEAN</span></div></div>
@@ -324,14 +346,14 @@
     <div class="page" id="page-user-mgmt">
       <div class="card">
         <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-person-badge"></i></div><div class="card-title">مدیریت کاربران سیستم</div><button class="btn btn-primary btn-sm" onclick="openMo('mo-user')"><i class="bi bi-plus-lg"></i> کاربر جدید</button></div>
-        <div class="card-body" style="padding:0"><table class="tbl"><thead><tr><th>کاربر</th><th>نقش</th><th>ایمیل</th><th>آخرین ورود</th><th>وضعیت</th><th>عملیات</th></tr></thead><tbody id="user-tbody"></tbody></table></div>
+        <div class="card-body tbl-wrap" style="padding:0"><table class="tbl"><thead><tr><th>کاربر</th><th>نقش</th><th>ایمیل</th><th>آخرین ورود</th><th>وضعیت</th><th>عملیات</th></tr></thead><tbody id="user-tbody"></tbody></table></div>
       </div>
 
       <!-- Role Cards Overview -->
       <div class="card" style="margin-top:18px">
         <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-shield-check"></i></div><div class="card-title">نقش‌های تعریف‌شده در سیستم</div></div>
         <div class="card-body">
-          <div id="role-cards" style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px"></div>
+          <div id="role-cards" class="grid-5"></div>
         </div>
       </div>
 
@@ -361,7 +383,7 @@
 
     <!-- ══ SETTINGS ══ -->
     <div class="page" id="page-settings">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+      <div class="grid-2">
         <div class="card">
           <div class="card-hd"><div class="card-hd-icon"><i class="bi bi-tools"></i></div><div class="card-title">تنظیمات بانک</div></div>
           <div class="card-body">
@@ -449,7 +471,59 @@
   <div class="mo-ft"><button class="btn btn-outline" onclick="closeMo('mo-user')">انصراف</button><button class="btn btn-primary" onclick="addUser()"><i class="bi bi-check-lg"></i> ایجاد</button></div>
 </div></div>
 
+<!-- Bottom Nav (mobile) -->
+<div id="bottom-nav">
+  <div class="bn-item active" data-page="dashboard" onclick="showPage('dashboard')">
+    <i class="bi bi-house-door"></i><span>خانه</span>
+  </div>
+  <div class="bn-item" data-page="transfer" onclick="showPage('transfer')">
+    <i class="bi bi-send"></i><span>انتقال</span>
+  </div>
+  <div class="bn-item" data-page="transactions" onclick="showPage('transactions')">
+    <i class="bi bi-arrow-left-right"></i><span>تراکنش</span>
+  </div>
+  <div class="bn-item" data-page="my-accounts" onclick="showPage('my-accounts')">
+    <i class="bi bi-wallet2"></i><span>حساب‌ها</span>
+  </div>
+  <div class="bn-item" data-page="more" onclick="toggleSidebar()">
+    <i class="bi bi-grid"></i><span>بیشتر</span>
+  </div>
+</div>
+
+<!-- FAB -->
+<button id="fab" onclick="fabAction()" title="عملیات سریع">
+  <i class="bi bi-plus-lg"></i>
+</button>
+
 <div id="toast"><i class="bi bi-check-circle"></i></div>
+
+<script>
+// Critical mobile/dark fallbacks (in case app.js load order issues)
+window.toggleSidebar = window.toggleSidebar || function(){
+  var sb=document.getElementById('sidebar');
+  var ov=document.getElementById('sb-overlay');
+  if(!sb) return;
+  var open=sb.classList.toggle('open');
+  if(ov) ov.classList.toggle('show', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+};
+window.closeSidebar = window.closeSidebar || function(){
+  var sb=document.getElementById('sidebar');
+  var ov=document.getElementById('sb-overlay');
+  if(sb) sb.classList.remove('open');
+  if(ov) ov.classList.remove('show');
+  document.body.style.overflow = '';
+};
+window.toggleDark = window.toggleDark || function(){
+  document.body.classList.toggle('dark');
+  var isDark=document.body.classList.contains('dark');
+  try{ localStorage.setItem('saderat-dark', isDark?'1':'0'); }catch(e){}
+  var icon=document.getElementById('dark-icon');
+  if(icon) icon.className = isDark ? 'bi bi-sun' : 'bi bi-moon';
+};
+(function(){ try{ if(localStorage.getItem('saderat-dark')==='1'){ document.body.classList.add('dark'); var i=document.getElementById('dark-icon'); if(i) i.className='bi bi-sun'; } }catch(e){} })();
+</script>
+
 <script src="/js/app.js"></script>
 </body>
 </html>
